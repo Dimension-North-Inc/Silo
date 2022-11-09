@@ -15,29 +15,20 @@ struct UserReducer: Reducer {
         @BindingState var name: String = ""
         @BindingState var isVerified: Bool = false
     }
-    enum Action: BindingActions {
-        case binding(BindingValue<State>)
+    enum Action: Actions {
     }
     
     var body: some Reducer<State, Action> {
-        Reduce {
-            state, action in
+        BindingReducer {
+            action in
+            switch action.keyPath {
+            case \.$name:       print("will update name: \(action.value)")
+            case \.$isVerified: print("will update isVerified: \(action.value)")
             
-            switch action {
-            case let .binding(binding):
-                binding.update(&state)
-
-                switch binding {
-                case \.$name:
-                    print("validate user name")
-                case \.$isVerified:
-                    print("validate user isVerified")
-                default:
-                    break
-                }
+            default:            break
             }
             
-            return .none
+            return true
         }
     }
 }

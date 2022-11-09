@@ -11,49 +11,48 @@ import SwiftUI
 /// A property wrapper used to mark state properties as accessible via SwiftUI bindings.
 ///
 /// Mark state properties you wish to mutate via SwiftUI bindings with the `@BindingState`
-/// property wrapper, and ensure reducer state conforms to the `BindingActions` protocol:
+/// property wrapper, and ensure your reducer incorprates a `BindingReducer` in its implementation:
 ///
 /// ```swift
 /// struct Users: Reducer {
 ///     struct State: States {
-///         // available as bindings
+///         // accessible as @Binding
 ///         @BindingState var name: String
 ///         @BindingState var age:  Int
 ///
-///         // not available as bindings
+///         // not accessible as @Binding
 ///         var isAuthenticated: Bool
 ///     }
-///
-///     struct Action: BindingActions {
-///         case binding(BindingValue<State>)
-///         ...
+///     enum Action: Actions {
+///         case authenticate
 ///     }
+///
+///     var body: some Reducer<State, Action> {
+///         // reduce bindings...
+///         BindingReducer()
+///
+///         // ...then perform other reducer-specific behavior
+///         Reduce {
+///             state, action in
+///             switch action {
+///             case .authenticate:
+///                 // ...
+///         }
+///     }
+/// }
 /// ```
-/// In SwiftUI code:
+///
+/// Once this is done, create view bindings using the usual `$property` syntax:
 ///
 /// ```swift
+///     @Observable var user: Store<Users>
+///     ...
+///
 ///     var body: some View {
 ///         Form {
 ///             TextField("Username", value: user.$name
 ///             ...
 /// ```
-///
-/// Unlike regular `@Binding` values, state isn't directly mutated using the`@BindingState` construction.
-/// Instead, your reducer receives `.binding(BindingValues<State>)` actions.
-///
-/// To process these actions, unwrap the passed binding value, and use it to update state:
-///
-/// ```swift
-///     var body: some Reducer<State, Action> {
-///         Reduce { state, action in
-///             switch action {
-///             case let .binding(binding):
-///                 binding.update(&state) // updates state
-///                 ...
-/// }
-/// ```
-///
-/// See `BindingValues<State>` documentation for additional information on processing bound values.
 ///
 @propertyWrapper
 public struct BindingState<Value> {
@@ -81,86 +80,74 @@ extension BindingState: Codable where Value: Codable {
 extension BindingState: Sendable where Value: Sendable {
 }
 
-/// A protocol for actions which can apply SwiftUI bindings
+/// An action representing the update of bound state.
 ///
-/// When a reducer wraps certain of its state properties using `@BindingState`,
-/// binding updates are sent as actions. BindingActions declares the format of these
-/// actions:
+/// When adding a `BindingReducer` to your custom reducer body, actions are
+/// reported back to you in the reiducers `shouldUpdate` closure.
 ///
-/// ```swift
-///     // Action declaration:
-///     enum Action: BindingActions {
-///         case binding(BindingValue<State>)
-///         // other supported actions
-///         ...
-///     }
-/// ```
-/// Receive and apply SwiftUI binding updates inside your reducer body:
-///
-/// ```swift
-///         // in the reducer body:
-///         switch action {
-///             case let .binding(binding):
-///                 // receive and apply a SwiftUI binding update
-///                 binding.update(&state)
-///             ...
-/// ```
-public protocol BindingActions<State>: Actions {
-    associatedtype State: States
-    static func binding(_ value: BindingValue<State>) -> Self
-}
-
-/// A  binding value used to update state within a reducer.
-///
-/// When extracting a `BindingValue` from a `BindingAction` via `case-let`, additional
-/// properties of the binding can be checked using a where clause on the case:
-///
-/// ```swift
-/// switch action {
-///     case let .binding(binding) where binding.keyPath == \.$firstName:
-///         binding.update(&state)
-///         // validate firstName value
-///         ...
-/// ```
-/// ...or within the case body:
-///
-/// ```swift
-/// switch action {
-/// case let .binding(binding):
-///     binding.update(&state)
-///
-///     switch binding {
-///         case \.$firstName:
-///         // validate firstName value
-///         ...
-/// ```
-///
-public struct BindingValue<State: States>: @unchecked Sendable, Equatable {
+public struct BindingAction<State: States>: Actions, @unchecked Sendable {
+    /// the action's aassociated keypath
     public let keyPath: PartialKeyPath<State>
+    /// the action's associated value
     public let value: Any
     
-    public let update: @Sendable (inout State) -> Void
-    
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
-        lhs.keyPath == rhs.keyPath
+    var update: @Sendable (inout State) -> Void
+}
+
+/// A `Reducer` that reduces `BindingAction<State>` actions onto state.
+///
+/// When creating a custom reducer with state properties annotated  using the  `BindingState`
+/// property wrapper, add a `BindingReducer` to its implementation in order to receive and reduce
+/// binding updates:
+///
+/// ```swift
+///     var body: some Reducer<State, Action> {
+///         BindingReducer {
+///             action in
+///             switch action.keyPath {
+///             case \.$name:       print("will update name: \(action.value)")
+///             case \.$isVerified: print("will update isVerified: \(action.value)")
+///
+///             default:            break
+///             }
+///
+///             // allow the update to proceed
+///             return true
+///         }
+///     }
+/// ```
+///
+/// `BindingReducer` accepts an optional `willUpdate` closure which is called for each action
+/// it reduces. The action can be used to identify both substate and value to be updated by the reducer.
+///
+public struct BindingReducer<State: States, Action: Actions>: Reducer {
+    public func reduce(state: inout State, action: Action) -> Effect<Actions>? {
+        return .none
     }
-    public static func ~=(lhs: PartialKeyPath<State>, rhs: Self) -> Bool {
-        lhs == rhs.keyPath
+    public func reduce(state: inout State, action: any Actions) -> Effect<Actions>? {
+        if let action = action as? BindingAction<State>, willUpdate(action) {
+            action.update(&state)
+        }
+        return .none
+    }
+    
+    let willUpdate: (BindingAction<State>) -> Bool
+    
+    public init(willUpdate: @escaping (BindingAction<State>) -> Bool = { _ in true }) {
+        self.willUpdate = willUpdate
     }
 }
 
-extension Store where Action: BindingActions, Action.State == Reduce.State {
+extension Store {
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<State, BindingState<T>>) -> Binding<T> {
         Binding {
             self.state[keyPath: keyPath].wrappedValue
         } set: {
             value, transaction in
             self.dispatch(
-                Reduce.Action.binding(
-                    BindingValue(keyPath: keyPath, value: value) {
-                        state in state[keyPath: keyPath].wrappedValue = value
-                    }
-                )
+                BindingAction(keyPath: keyPath, value: value) {
+                    state in state[keyPath: keyPath].wrappedValue = value
+                }
             )
         }
     }
