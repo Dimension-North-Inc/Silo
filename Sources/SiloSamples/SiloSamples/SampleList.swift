@@ -22,19 +22,19 @@ struct SampleList: View {
         Sample(
             name: "Observable Store",
             view: AnyView(
-                ObservableStore()
+                ObservableStoreSample()
             )
         ),
         Sample(
             name: "Repeating Effects",
             view: AnyView(
-                RepeatingEffects()
+                RepeatingEffectsSample()
             )
         ),
         Sample(
             name: "Binding Actions",
             view: AnyView(
-                Bindings()
+                BindingsSample()
             )
         ),
     ]

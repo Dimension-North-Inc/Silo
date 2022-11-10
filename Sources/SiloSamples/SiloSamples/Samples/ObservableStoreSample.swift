@@ -1,5 +1,5 @@
 //
-//  ObservableStore.swift
+//  ObservableStoreSample.swift
 //  SiloSamples
 //
 //  Created by Mark Onyschuk on 2022-11-06.
@@ -36,18 +36,7 @@ struct Counter: Reducer {
 
 // MARK: - Sample View
 
-/// A `Store` conforms to `ObservableObject` and so can be observed whenever any of its state
-/// changes. For simple use-cases, this is an acceptable way to refresh.
-///
-/// For an alternative, have a look at the `NonobservableStore` example where we make use of a
-/// special `View` type - `WithStoreState` to allow our view  to update *only if* some
-/// particular portion of a store's state changes.
-///
-/// Those familiar with React may recognize constructions like `With...` that we use in the alternative
-/// implementation.
-///
-struct ObservableStore: View {
-    
+struct ObservableStoreSample: View {
     @StateObject
     private var counter = Store(Counter(), state: Counter.State())
     
@@ -73,6 +62,6 @@ struct ObservableStore: View {
 
 struct ObservableStore_Previews: PreviewProvider {
     static var previews: some View {
-        ObservableStore()
+        ObservableStoreSample()
     }
 }

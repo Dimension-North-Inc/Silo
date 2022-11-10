@@ -1,5 +1,5 @@
 //
-//  SideEffects.swift
+//  RepeatingEffectsSample.swift
 //  SiloSamples
 //
 //  Created by Mark Onyschuk on 2022-11-06.
@@ -69,7 +69,7 @@ struct Ticker: Reducer {
 }
 
 // MARK: - Sample View
-struct RepeatingEffects: View {
+struct RepeatingEffectsSample: View {
     @StateObject
     private var ticker = Store(Ticker(), state: Ticker.State())
     
@@ -95,6 +95,6 @@ struct RepeatingEffects: View {
 
 struct RepeatingEffects_Previews: PreviewProvider {
     static var previews: some View {
-        RepeatingEffects()
+        RepeatingEffectsSample()
     }
 }

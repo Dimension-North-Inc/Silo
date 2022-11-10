@@ -1,5 +1,5 @@
 //
-//  Bindings.swift
+//  BindingsSample.swift
 //  SiloSamples
 //
 //  Created by Mark Onyschuk on 2022-11-08.
@@ -17,7 +17,7 @@ struct UserReducer: Reducer {
     }
     enum Action: Actions {
     }
-    
+
     var body: some Reducer<State, Action> {
         BindingReducer {
             state, action in
@@ -34,7 +34,7 @@ struct UserReducer: Reducer {
 }
 
 // MARK: - Sample View
-struct Bindings: View {
+struct BindingsSample: View {
     @StateObject
     private var user = Store(UserReducer(), state: UserReducer.State())
 
@@ -50,6 +50,6 @@ struct Bindings: View {
 
 struct BindingActions_Previews: PreviewProvider {
     static var previews: some View {
-        Bindings()
+        BindingsSample()
     }
 }

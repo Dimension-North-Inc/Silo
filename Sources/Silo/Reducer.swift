@@ -18,7 +18,7 @@ import Foundation
 ///     var numberOfTicks: Int
 /// }
 /// ```
-public protocol States: Sendable {}
+public typealias States = Sendable
 
 /// An abstract behavor which may cause application state to change.
 ///

@@ -11,10 +11,10 @@
 		4D13DEAD291801FD00202C06 /* SampleList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEAC291801FD00202C06 /* SampleList.swift */; };
 		4D13DEAF291801FE00202C06 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4D13DEAE291801FE00202C06 /* Assets.xcassets */; };
 		4D13DEB3291801FE00202C06 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4D13DEB2291801FE00202C06 /* Preview Assets.xcassets */; };
-		4D13DEBE2918321200202C06 /* ObservableStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEBD2918321200202C06 /* ObservableStore.swift */; };
+		4D13DEBE2918321200202C06 /* ObservableStoreSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEBD2918321200202C06 /* ObservableStoreSample.swift */; };
 		4D13DEC12918323B00202C06 /* Silo in Frameworks */ = {isa = PBXBuildFile; productRef = 4D13DEC02918323B00202C06 /* Silo */; };
-		4D13DEC32918360600202C06 /* RepeatingEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEC22918360600202C06 /* RepeatingEffects.swift */; };
-		4DD01106291A79BB00D6F346 /* Bindings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD01105291A79BB00D6F346 /* Bindings.swift */; };
+		4D13DEC32918360600202C06 /* RepeatingEffectsSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */; };
+		4DD01106291A79BB00D6F346 /* BindingsSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD01105291A79BB00D6F346 /* BindingsSample.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,9 +25,9 @@
 		4D13DEB0291801FE00202C06 /* SiloSamples.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SiloSamples.entitlements; sourceTree = "<group>"; };
 		4D13DEB2291801FE00202C06 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		4D13DEBA2918020E00202C06 /* Silo */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Silo; path = ../..; sourceTree = "<group>"; };
-		4D13DEBD2918321200202C06 /* ObservableStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableStore.swift; sourceTree = "<group>"; };
-		4D13DEC22918360600202C06 /* RepeatingEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatingEffects.swift; sourceTree = "<group>"; };
-		4DD01105291A79BB00D6F346 /* Bindings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bindings.swift; sourceTree = "<group>"; };
+		4D13DEBD2918321200202C06 /* ObservableStoreSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableStoreSample.swift; sourceTree = "<group>"; };
+		4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatingEffectsSample.swift; sourceTree = "<group>"; };
+		4DD01105291A79BB00D6F346 /* BindingsSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingsSample.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,9 +100,9 @@
 		4D13DEBC291831F100202C06 /* Samples */ = {
 			isa = PBXGroup;
 			children = (
-				4DD01105291A79BB00D6F346 /* Bindings.swift */,
-				4D13DEBD2918321200202C06 /* ObservableStore.swift */,
-				4D13DEC22918360600202C06 /* RepeatingEffects.swift */,
+				4DD01105291A79BB00D6F346 /* BindingsSample.swift */,
+				4D13DEBD2918321200202C06 /* ObservableStoreSample.swift */,
+				4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */,
 			);
 			path = Samples;
 			sourceTree = "<group>";
@@ -188,11 +188,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4DD01106291A79BB00D6F346 /* Bindings.swift in Sources */,
+				4DD01106291A79BB00D6F346 /* BindingsSample.swift in Sources */,
 				4D13DEAD291801FD00202C06 /* SampleList.swift in Sources */,
-				4D13DEC32918360600202C06 /* RepeatingEffects.swift in Sources */,
+				4D13DEC32918360600202C06 /* RepeatingEffectsSample.swift in Sources */,
 				4D13DEAB291801FD00202C06 /* SiloSamplesApp.swift in Sources */,
-				4D13DEBE2918321200202C06 /* ObservableStore.swift in Sources */,
+				4D13DEBE2918321200202C06 /* ObservableStoreSample.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

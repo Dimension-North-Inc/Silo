@@ -10,24 +10,24 @@ import Foundation
 
 /// A state container
 @dynamicMemberLookup
-public final class Store<Reduce: Reducer>: ObservableObject {
+public final class Store<Reducer>: ObservableObject  where Reducer: Silo.Reducer {
     private var mutex = Mutex()
     private var tasks = TaskStore()
 
-    private var reducer: Reduce
+    private var reducer: Reducer
     
-    public typealias State  = Reduce.State
-    public typealias Action = Reduce.Action
+    public typealias State  = Reducer.State
+    public typealias Action = Reducer.Action
     
     /// current state
     @Published
-    internal var state: State
+    var state: State
     
     /// Initializes the store with a reducer and starting state
     /// - Parameters:
     ///   - reducer: a reducer
     ///   - state: a starting state
-    public init(_ reducer: Reduce, state: State) {
+    public init(_ reducer: Reducer, state: State) {
         self.reducer = reducer
         self.state   = state
     }
@@ -123,23 +123,5 @@ public final class Store<Reduce: Reducer>: ObservableObject {
     // MARK: - DynamicMemberLookup
     public subscript<T>(dynamicMember keyPath: KeyPath<State, T>) -> T {
         return state[keyPath: keyPath]
-    }
-}
-
-extension Store where Reduce: Feature {
-    /// Initializes a new `Feature` store with optional initial state.
-    /// If no initial state is specified,`Feature.initial` is  used.
-    ///
-    /// Initializing a store from a `Feature` allows for a simplified initializer:
-    ///
-    /// ```swift
-    ///     let store = Store<MyFeature>()
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - state: an optional initial state
-    public convenience init(state: Reduce.State?) {
-        self.init(Reduce(), state: state ?? Reduce.initial
-        )
     }
 }

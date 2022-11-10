@@ -80,6 +80,9 @@ extension BindingState: Codable where Value: Codable {
 extension BindingState: Sendable where Value: Sendable {
 }
 
+extension BindingState: Equatable where Value: Equatable {
+}
+
 /// An action representing the update of bound state.
 ///
 /// When adding a `BindingReducer` to your custom reducer body, actions are

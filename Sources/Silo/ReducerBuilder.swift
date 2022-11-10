@@ -155,5 +155,24 @@ struct ArrayReducer<State: States, Action: Actions>: Reducer {
             return .none
         }
     }
+    
+    func reduce(state: inout State, action: any Actions) -> Effect<any Actions>? {
+        var effects: [Effect<any Actions>] = []
+        
+        // run each reducer
+        for reducer in reducers {
+            if let effect = reducer.reduce(state: &state, action: action) {
+                effects.append(effect)
+            }
+        }
+
+        // return a combined effect
+        if !effects.isEmpty {
+            return effects[1...].reduce(effects[0], +)
+        } else {
+            return .none
+        }
+    }
+
 }
 
