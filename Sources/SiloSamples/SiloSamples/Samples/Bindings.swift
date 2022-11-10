@@ -20,7 +20,7 @@ struct UserReducer: Reducer {
     
     var body: some Reducer<State, Action> {
         BindingReducer {
-            action in
+            state, action in
             switch action.keyPath {
             case \.$name:       print("will update name: \(action.value)")
             case \.$isVerified: print("will update isVerified: \(action.value)")

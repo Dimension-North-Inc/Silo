@@ -11,11 +11,14 @@ import Foundation
 public typealias ActionEffect<Action> = () async -> Action
 public typealias MultiActionEffect<Action> = (Yield<Action>) async -> Void
 
-/// An asynchronous side-effect, run by a `Store` as result of `Action`s sent to it's associated `reducer`.
+/// An asynchronous side-effect, managed and run by a `Store` as result of `Action`s sent to it's associated `reducer`.
 public struct Effect<Action> {
     enum Operation {
         case one(ActionEffect<Action>)
         case many(MultiActionEffect<Action>)
+        
+        case cancel(AnyHashable)
+        case forget(AnyHashable)
         
         indirect case compound([Operation])
         indirect case cancellable(AnyHashable, Operation)
@@ -49,9 +52,8 @@ public struct Effect<Action> {
     ///    }
     ///
     /// case .stopTicking:
-    ///    Effects.cancel(state.ticker)
-    ///    state.ticker = nil
-    ///    return .none
+    ///    defer { state.ticker = nil }
+    ///    return Effect.cancel(state.ticker)
     ///
     /// case .tick:
     ///    if state.ticker != nil {
@@ -65,6 +67,13 @@ public struct Effect<Action> {
         switch operation {
         case .one, .many, .compound:
             return Effect(operation: .cancellable(name, operation))
+
+        case .cancel, .forget:
+            return Effect(operation: .cancel(name))
+
+        case .cancellable(let named, _) where named == name:
+            return Effect(operation: .cancel(name))
+            
         case .cancellable(_, let underlying):
             return Effect(operation: .cancellable(name, underlying))
         }
@@ -96,17 +105,32 @@ public struct Effect<Action> {
             return Effect(operation: .compound([lhv, rhv]))
         }
     }
+    
+    /// Returns as effect used to cancel a previously registered cancellable effect.
+    /// - Parameter name: an effect name
+    /// - Returns: a new effect
+    public static func cancel(_ name: AnyHashable) -> Effect {
+        return Effect(operation: .cancel(name))
+    }
+    
+    
+    /// Returns an effect used to forget a previously registered cancellable effect.
+    /// - Parameter name: an effect name
+    /// - Returns: a new effect.
+    public static func forget(_ name: AnyHashable) -> Effect {
+        return Effect(operation: .forget(name))
+    }
 }
 
-public enum Effects {
-    private static var mutex = Mutex()
-    private static var tasks = [AnyHashable:AnyTask]()
+final class TaskStore {
+    private var mutex = Mutex()
+    private var tasks = [AnyHashable:AnyTask]()
     
     /// Registers a cancellable, type erased task.
     /// - Parameters:
     ///   - task: a type erased task
     ///   - name: a unique identifier for the task
-    public static func register(task: AnyTask, name: AnyHashable) {
+    func register(task: AnyTask, name: AnyHashable) {
         mutex.locked {
             tasks[name] = task
         }
@@ -114,12 +138,21 @@ public enum Effects {
     
     /// Cancels a previously registered task
     /// - Parameter name: the unique identifier for the task
-    public static func cancel(_ name: AnyHashable) {
+    func cancel(_ name: AnyHashable) {
         mutex.locked {
             if let task = tasks[name] {
                 tasks[name] = nil
                 task.cancel()
             }
+        }
+    }
+    
+    
+    /// Cancel all active tasks
+    func cancelAll() {
+        mutex.locked {
+            tasks.values.forEach { task in task.cancel() }
+            tasks.removeAll()
         }
     }
     
@@ -129,10 +162,14 @@ public enum Effects {
     /// Once forgotten, a task can no longer be cancelled.
     ///
     /// - Parameter name: the unique identifier for the task.
-    public static func forget(_ name: AnyHashable) {
+    func forget(_ name: AnyHashable) {
         mutex.locked {
             tasks[name] = nil
         }
+    }
+    
+    deinit {
+        cancelAll()
     }
 }
 

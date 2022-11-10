@@ -103,7 +103,7 @@ public struct BindingAction<State: States>: Actions, @unchecked Sendable {
 /// ```swift
 ///     var body: some Reducer<State, Action> {
 ///         BindingReducer {
-///             action in
+///             state, action in
 ///             switch action.keyPath {
 ///             case \.$name:       print("will update name: \(action.value)")
 ///             case \.$isVerified: print("will update isVerified: \(action.value)")
@@ -117,24 +117,24 @@ public struct BindingAction<State: States>: Actions, @unchecked Sendable {
 ///     }
 /// ```
 ///
-/// `BindingReducer` accepts an optional `willUpdate` closure which is called for each action
-/// it reduces. The action can be used to identify both substate and value to be updated by the reducer.
+/// `BindingReducer` accepts an optional `shouldUpdate` closure which is called for each action
+/// it reduces. The action can be used to identify both substate and value to be updated by the reducer. 
 ///
 public struct BindingReducer<State: States, Action: Actions>: Reducer {
     public func reduce(state: inout State, action: Action) -> Effect<Actions>? {
         return .none
     }
     public func reduce(state: inout State, action: any Actions) -> Effect<Actions>? {
-        if let action = action as? BindingAction<State>, willUpdate(action) {
+        if let action = action as? BindingAction<State>, shouldUpdate(&state, action) {
             action.update(&state)
         }
         return .none
     }
     
-    let willUpdate: (BindingAction<State>) -> Bool
+    let shouldUpdate: (inout State, BindingAction<State>) -> Bool
     
-    public init(willUpdate: @escaping (BindingAction<State>) -> Bool = { _ in true }) {
-        self.willUpdate = willUpdate
+    public init(shouldUpdate: @escaping (inout State, BindingAction<State>) -> Bool = { _, _ in true }) {
+        self.shouldUpdate = shouldUpdate
     }
 }
 
@@ -145,9 +145,9 @@ extension Store {
         } set: {
             value, transaction in
             self.dispatch(
-                BindingAction(keyPath: keyPath, value: value) {
+                BindingAction(keyPath: keyPath, value: value, update: {
                     state in state[keyPath: keyPath].wrappedValue = value
-                }
+                })
             )
         }
     }

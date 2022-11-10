@@ -7,7 +7,7 @@
 //
 
 /// a function which yields a value to a parent concurrency domain
-public typealias Yield<Element> = (Element)->Void
+public typealias Yield<Element> = (Element) -> Void
 
 extension AsyncStream {
     /// Initializes an asynchronous stream from an async function that periodically yields results to some parent concurrency domain.

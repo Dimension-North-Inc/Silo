@@ -49,19 +49,14 @@ struct Ticker: Reducer {
                         send(Action.tick)
                     }
                 }
-                /// we make this effect *cancellable* using an arbirtary `Hashable` - in this case a `UUID`
-                /// which we've stored in `state`.
+                /// we make this effect *cancellable* using an arbirtary `Hashable` - in this case a
+                /// `Optional(UUID)` which we've stored in `state`.
                 .cancel(using: state.tickerID)
                 
             case .finishTicking where state.tickerID != nil:
                 /// To cancel an existing ticker, we cancel based on ticker name `state.tickerID`.
-                ///
-                /// - NOTE: The container for all cancellable `Effect`s is global. This means that if a reducer's
-                /// associated store goes out-of-scope without cancelling, then the effect will continue until done. We
-                /// need to come up with some sort of scheme where we associate the effect with the lifetime of the
-                /// `Store`, at least...
-                Effects.cancel(state.tickerID)
-                state.tickerID = nil
+                defer { state.tickerID = nil }
+                return Effect.cancel(state.tickerID)
 
             default:
                 break

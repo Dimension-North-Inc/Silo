@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// A result builder used to define and compose `Reducer`s.
+/// A result builder used to define and compose reducers.
 @resultBuilder
 public struct ReducerBuilder<State: States, Action: Actions> {
     

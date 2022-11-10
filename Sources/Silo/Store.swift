@@ -12,6 +12,8 @@ import Foundation
 @dynamicMemberLookup
 public final class Store<Reduce: Reducer>: ObservableObject {
     private var mutex = Mutex()
+    private var tasks = TaskStore()
+
     private var reducer: Reduce
     
     public typealias State  = Reduce.State
@@ -30,6 +32,10 @@ public final class Store<Reduce: Reducer>: ObservableObject {
         self.state   = state
     }
     
+    deinit {
+        self.tasks.cancelAll()
+    }
+
     /// Reduces `action` onto `state`, then executes any returned `Effect`.
     /// - Parameter action: an action to reduce onto `state`
     public func dispatch(_ action: Action) {
@@ -58,23 +64,43 @@ public final class Store<Reduce: Reducer>: ObservableObject {
         switch operation {
         case let .one(op):
             return Task {
+                [weak self] in
+                
                 let action = await op()
-                await self.observe(action)
-            }
-        case let .many(ops):
-            return Task {
-                for await action in AsyncStream(builder: ops) {
+                if let self {
                     await self.observe(action)
                 }
             }
+        case let .many(ops):
+            return Task {
+                [weak self] in
+
+                for await action in AsyncStream(builder: ops) {
+                    if let self {
+                        await self.observe(action)
+                    }
+                }
+            }
+            
+        case let .cancel(name):
+            tasks.cancel(name)
+            return Task {}
+        
+        case let .forget(name):
+            tasks.forget(name)
+            return Task {}
             
         case let .compound(ops):
             return Task {
+                [weak self] in
+
                 await withTaskGroup(of: Void.self) {
                     group in
-                    for task in ops.map(self.execute) {
-                        group.addTask {
-                            _ = await task.result
+                    if let execute = self?.execute {
+                        for task in ops.map(execute) {
+                            group.addTask {
+                                _ = await task.result
+                            }
                         }
                     }
                 }
@@ -82,10 +108,14 @@ public final class Store<Reduce: Reducer>: ObservableObject {
             
         case let .cancellable(name, op):
             return Task {
-                let task = execute(operation: op)
-                Effects.register(task: task.eraseToAnyTask(), name: name)
-                let _ = await task.result
-                Effects.forget(name)
+                [weak self] in
+
+                if let task = self?.execute(operation: op) {
+                    self?.tasks.register(task: task.eraseToAnyTask(), name: name)
+                    
+                    let _ = await task.result
+                    self?.tasks.forget(name)
+                }
             }
         }
     }

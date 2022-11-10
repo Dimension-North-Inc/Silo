@@ -34,7 +34,7 @@ public final class Mutex {
         pthread_mutexattr_destroy(&attr)
     }
 
-    private func lock() {
+    public func lock() {
         switch pthread_mutex_lock(&mutex) {
         case 0: break
 
@@ -45,7 +45,7 @@ public final class Mutex {
         }
     }
 
-    private func unlock() {
+    public func unlock() {
         let ret = pthread_mutex_unlock(&mutex)
         switch ret {
         case 0: break
