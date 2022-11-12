@@ -51,7 +51,7 @@ struct Ticker: Reducer {
                 }
                 /// we make this effect *cancellable* using an arbirtary `Hashable` - in this case a
                 /// `Optional(UUID)` which we've stored in `state`.
-                .cancel(using: state.tickerID)
+                .cancelled(using: state.tickerID)
                 
             case .finishTicking where state.tickerID != nil:
                 /// To cancel an existing ticker, we cancel based on ticker name `state.tickerID`.

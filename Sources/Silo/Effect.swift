@@ -23,7 +23,7 @@ public struct Effect<Action> {
         indirect case compound([Operation])
         indirect case cancellable(AnyHashable, Operation)
     }
-
+    
     var operation: Operation
     init(operation: Operation) {
         self.operation = operation
@@ -35,21 +35,19 @@ public struct Effect<Action> {
     /// ```
     /// switch action {
     /// case .startTicking:
-    ///    if state.ticker == nil {
-    ///        state.ticker = UUID()
-    ///        return Effect
-    ///            .run {
-    ///                send in
-    ///                send(.tick)
-    ///                while true {
-    ///                    try? await Task.sleep(for: .seconds(1))
-    ///                    send(.tick)
-    ///                }
-    ///            }
-    ///            .cancel(using: state.ticker)
-    ///    } else {
-    ///        return .none
-    ///    }
+    ///     guard state.ticker == nil else {
+    ///         return .none
+    ///     }
+    ///     state.ticker = UUID()
+    ///     return Effect.many {
+    ///             send in
+    ///             send(.tick)
+    ///             while true {
+    ///                 try? await Task.sleep(for: .seconds(1))
+    ///                 send(.tick)
+    ///             }
+    ///     }
+    ///     .cancelled(using: state.ticker)
     ///
     /// case .stopTicking:
     ///    defer { state.ticker = nil }
@@ -63,22 +61,19 @@ public struct Effect<Action> {
     ///}
     /// ```
     /// - Parameter name: a unique name
-    public func cancel(using name: AnyHashable) -> Self {
+    public func cancelled(using name: AnyHashable) -> Self {
         switch operation {
         case .one, .many, .compound:
             return Effect(operation: .cancellable(name, operation))
-
+            
         case .cancel, .forget:
-            return Effect(operation: .cancel(name))
-
-        case .cancellable(let named, _) where named == name:
             return Effect(operation: .cancel(name))
             
         case .cancellable(_, let underlying):
             return Effect(operation: .cancellable(name, underlying))
         }
     }
-
+    
     /// Returns an effect that generates a single action when it completes.
     /// - Parameter operation: an asynchronous operation
     /// - Returns: a new effect
@@ -93,6 +88,20 @@ public struct Effect<Action> {
         Effect(operation: .many(operation))
     }
     
+    /// Returns as effect used to cancel a previously registered cancellable effect.
+    /// - Parameter name: an effect name
+    /// - Returns: a new effect
+    public static func cancel(_ name: AnyHashable) -> Effect {
+        return Effect(operation: .cancel(name))
+    }
+    
+    /// Returns an effect used to forget a previously registered cancellable effect.
+    /// - Parameter name: an effect name
+    /// - Returns: a new effect.
+    public static func forget(_ name: AnyHashable) -> Effect {
+        return Effect(operation: .forget(name))
+    }
+    
     static func +(lhs: Effect, rhs: Effect) -> Effect {
         switch (lhs.operation, rhs.operation) {
         case let (.compound(lhv), .compound(rhv)):
@@ -105,27 +114,88 @@ public struct Effect<Action> {
             return Effect(operation: .compound([lhv, rhv]))
         }
     }
-    
-    /// Returns as effect used to cancel a previously registered cancellable effect.
-    /// - Parameter name: an effect name
-    /// - Returns: a new effect
-    public static func cancel(_ name: AnyHashable) -> Effect {
-        return Effect(operation: .cancel(name))
-    }
-    
-    
-    /// Returns an effect used to forget a previously registered cancellable effect.
-    /// - Parameter name: an effect name
-    /// - Returns: a new effect.
-    public static func forget(_ name: AnyHashable) -> Effect {
-        return Effect(operation: .forget(name))
-    }
 }
 
-final class TaskStore {
+final class EffectStore {
     private var mutex = Mutex()
     private var tasks = [AnyHashable:AnyTask]()
     
+    private var dispatch: (any Actions) -> Void
+    
+    init(dispatch: @escaping (any Actions) -> Void) {
+        self.dispatch = dispatch
+    }
+    
+    deinit {
+        cancelAll()
+    }
+
+    @MainActor
+    private func observe(_ action: any Actions) {
+        dispatch(action)
+    }
+
+    @discardableResult
+    func execute(operation: Effect<any Actions>.Operation) -> Task<(), Never> {
+        switch operation {
+        case let .one(op):
+            return Task {
+                [weak self] in
+                
+                let action = await op()
+                if let self {
+                    await self.observe(action)
+                }
+            }
+        case let .many(ops):
+            return Task {
+                [weak self] in
+
+                for await action in AsyncStream(builder: ops) {
+                    if let self {
+                        await self.observe(action)
+                    }
+                }
+            }
+            
+        case let .cancel(name):
+            cancel(name)
+            return Task {}
+        
+        case let .forget(name):
+            forget(name)
+            return Task {}
+            
+        case let .compound(ops):
+            return Task {
+                [weak self] in
+
+                await withTaskGroup(of: Void.self) {
+                    group in
+                    if let execute = self?.execute {
+                        for task in ops.map(execute) {
+                            group.addTask {
+                                _ = await task.result
+                            }
+                        }
+                    }
+                }
+            }
+            
+        case let .cancellable(name, op):
+            return Task {
+                [weak self] in
+
+                if let task = self?.execute(operation: op) {
+                    self?.register(task: task.eraseToAnyTask(), name: name)
+                    
+                    let _ = await task.result
+                    self?.forget(name)
+                }
+            }
+        }
+    }
+
     /// Registers a cancellable, type erased task.
     /// - Parameters:
     ///   - task: a type erased task
@@ -166,10 +236,6 @@ final class TaskStore {
         mutex.locked {
             tasks[name] = nil
         }
-    }
-    
-    deinit {
-        cancelAll()
     }
 }
 

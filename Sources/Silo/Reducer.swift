@@ -23,7 +23,7 @@ public typealias States = Sendable
 /// An abstract behavor which may cause application state to change.
 ///
 /// Actions represent both user interactions as well as points in an application's lifecycle.
-/// A user's button tap, adding a TODO item to a list of TODOs, can be modeled as an action.
+/// A user's button tap which adds a TODO item to a list of TODOs can be modeled as an action.
 /// Similarly, application launch, a ticking timer, or the presentation of a new window can be
 /// modeled as actions.
 ///
@@ -36,12 +36,11 @@ public typealias States = Sendable
 /// ```
 public protocol Actions: Sendable {}
 
-/// A type with describes how application `State` evolves over time in response to `Actions`,
-/// or by asynchronous `Effects` triggered in response to earlier `Actions`.
+/// A type with describes how application `State` evolves over time in response to `Actions`.
 ///
-/// Reducers encapsulate application logic in a `reduce(state:action:)` function which modifies
-/// `State` based on received `Action`s, and which returns optional `Effect`s as result of received
-/// `Action`s:
+/// Reducers encapsulate application logic in a `reduce(state:action:)` where they modify
+/// `State` and return optional asynchronous `Action` generating `Effect`s as result of the
+/// `Action`s they receive:
 ///
 /// ```swift
 /// struct Ticker: Reducer {
@@ -60,20 +59,22 @@ public protocol Actions: Sendable {}
 ///             if state.timer != nil {
 ///                 state.numberOfTicks += 1
 ///             }
+///             return .none
+///
 ///         case .stopTicking:
-///             Effects.cancel(state.timer)
-///             state.timer = nil
+///             defer { state.timer = nil }
+///             return Effects.cancel(state.timer)
 ///
 ///         case .startTicking(let timer):
 ///             state.timer = timer
-///             Effect.run {
+///             return Effect.many {
 ///                 emit in
 ///                 while true {
 ///                     try? await Task.sleep(for: .seconds(1))
 ///                     emit(.tick)
 ///                 }
 ///             }
-///             .cancel(using: state.timer)
+///             .cancelled(using: state.timer)
 ///         }
 ///     }
 /// }
