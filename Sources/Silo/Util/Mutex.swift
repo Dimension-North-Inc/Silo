@@ -72,6 +72,7 @@ public final class Mutex {
     /// - Parameter exec: code to execute
     /// - Returns: the result of calling `exec`, if any
     /// - Throws: errors while calling `exec`, if any
+    @inlinable
     public final func locked<Result>(_ exec: () throws -> Result) rethrows -> Result {
         lock()
         defer { self.unlock() }
