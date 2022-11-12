@@ -5,78 +5,72 @@
 //  Created by Mark Onyschuk on 2018-12-05.
 //  Copyright © 2022 Dimension North Inc. All rights reserved.
 //
+//  Adapted from Lock.swift, part of the SwiftNIO open source project
+//  Copyright (c) 2017-2018 Apple Inc. and the SwiftNIO project authors
+//  Licensed under Apache License v2.0
+//
 
 import Foundation
 
 /// A pthread-based Mutex
+///
+/// Protect  sections of code from concurrent execution using `Mutex.locked(_:)`:
+///
+/// ```swift
+///     let lock = Mutex()
+///
+///     // ...later in code
+///     lock.locked {
+///         // run one thread at a time...
+///     }
+/// ```
+///
+/// - Note: Implements best-practice for work with `pthread_mutex_t` as described
+/// [here](https://forums.swift.org/t/thread-sanitiser-v-mutex/54515/3).
 public final class Mutex {
-    private var mutex: pthread_mutex_t = pthread_mutex_t()
+    fileprivate let mutex = UnsafeMutablePointer<pthread_mutex_t>.allocate(capacity: 1)
 
-    /// initializes the mutex
+    /// Initializes the mutex
     public init() {
-        var attr: pthread_mutexattr_t = pthread_mutexattr_t()
+        var attr = pthread_mutexattr_t()
         pthread_mutexattr_init(&attr)
-#if os(Linux)
-        pthread_mutexattr_settype(&attr, Int32(PTHREAD_MUTEX_RECURSIVE))
-#else
-        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE)
-#endif
-        switch pthread_mutex_init(&mutex, &attr) {
-        case 0: break
 
-        case  EAGAIN: fatalError("EAGAIN - Resource temporarily unavailable")
-        case  EINVAL: fatalError("EINVAL - Invalid argument")
-        case  ENOMEM: fatalError("ENOMEM - Cannot allocate memory")
-
-        case let err: fatalError("ERROR CODE \(err)")
-        }
-
-        pthread_mutexattr_destroy(&attr)
-    }
-
-    public func lock() {
-        switch pthread_mutex_lock(&mutex) {
-        case 0: break
-
-        case  EINVAL: fatalError("EINVAL - Invalid argument")
-        case EDEADLK: fatalError("EDEADLK - Resource deadlock avoided")
-
-        case let err: fatalError("ERROR CODE \(err)")
-        }
-    }
-
-    public func unlock() {
-        let ret = pthread_mutex_unlock(&mutex)
-        switch ret {
-        case 0: break
-
-        case   EPERM: fatalError("EPERM - Operation not permitted")
-        case  EINVAL: fatalError("EINVAL - Invalid argument")
-
-        case let err: fatalError("ERROR CODE \(err)")
-        }
+        let err = pthread_mutex_init(self.mutex, &attr)
+        precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
     }
 
     deinit {
-        assert(
-            pthread_mutex_trylock(&self.mutex) == 0
-                && pthread_mutex_unlock(&self.mutex) == 0,
-            "deinitialization of a locked mutex results in undefined behavior!"
-        )
+        let err = pthread_mutex_destroy(self.mutex)
+        precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
 
-        pthread_mutex_destroy(&self.mutex)
+        mutex.deallocate()
     }
 
-    /// Executes `exec` mutually exclusively
+    /// Acquires the lock.
     ///
-    /// - Parameter exec: code to execute
-    /// - Returns: the result of calling `exec`, if any
-    /// - Throws: errors while calling `exec`, if any
-    @inlinable
-    public final func locked<Result>(_ exec: () throws -> Result) rethrows -> Result {
-        lock()
-        defer { self.unlock() }
+    /// Use `locked(_:)` instead of this method and `unlock`, to simplify lock handling.
+    public func lock() {
+        let err = pthread_mutex_lock(self.mutex)
+        precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
+    }
 
-        return try exec()
+    /// Releases the lock.
+    ///
+    /// Use `locked(_:)` instead of this method and `lock`, to simplify lock handling.
+    public func unlock() {
+        let err = pthread_mutex_unlock(self.mutex)
+        precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
+    }
+
+    /// Acquire the lock for the duration of the given closure.
+    ///
+    /// - Parameter body: The closure to execute while holding the lock.
+    /// - Returns: The value returned by the block.
+    @inlinable
+    public func locked<T>(_ body: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+        
+        return try body()
     }
 }
