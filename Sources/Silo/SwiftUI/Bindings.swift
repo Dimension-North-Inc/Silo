@@ -144,7 +144,7 @@ public struct BindingReducer<State: States, Action: Actions>: Reducer {
 extension Store {
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<State, BindingState<T>>) -> Binding<T> {
         Binding {
-            self.state[keyPath: keyPath].wrappedValue
+            self.state.value[keyPath: keyPath].wrappedValue
         } set: {
             value, transaction in
             self.dispatch(

@@ -12,7 +12,7 @@
 
 import Foundation
 
-/// A pthread-based Mutex
+/// A pthread-based recursive Mutex lock
 ///
 /// Protect  sections of code from concurrent execution using `Mutex.locked(_:)`:
 ///
@@ -25,18 +25,21 @@ import Foundation
 ///     }
 /// ```
 ///
-/// - Note: Implements best-practice for work with `pthread_mutex_t` as described
+/// - Note: Implements best-practices for work with `pthread_mutex_t` as described
 /// [here](https://forums.swift.org/t/thread-sanitiser-v-mutex/54515/3).
 public final class Mutex {
     fileprivate let mutex = UnsafeMutablePointer<pthread_mutex_t>.allocate(capacity: 1)
-
-    /// Initializes the mutex
-    public init() {
+    
+    /// Initializes the mutex.
+    public init(recursive: Bool = false) {
         var attr = pthread_mutexattr_t()
         pthread_mutexattr_init(&attr)
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 
         let err = pthread_mutex_init(self.mutex, &attr)
         precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
+        
+        pthread_mutexattr_destroy(&attr)
     }
 
     deinit {
