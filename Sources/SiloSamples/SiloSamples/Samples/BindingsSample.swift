@@ -40,11 +40,16 @@ struct BindingsSample: View {
 
     var body: some View {
         Form {
-            TextField("Name", text: user.$name)
-            Toggle(isOn: user.$isVerified) {
-                Text("Is Verified")
+            Section {
+                Text("`BindingReducer` and `@BindingState` synthesize reducer actions corresponding to simple state updates.")
             }
-        }.padding()
+            Section {
+                TextField("Name", text: user.$name)
+                Toggle(isOn: user.$isVerified) {
+                    Text("Is Verified")
+                }
+            }
+        }
     }
 }
 

@@ -7,6 +7,8 @@
 //
 
 import Silo
+import IdentifiedCollections
+
 import SwiftUI
 
 struct SampleList: View {
@@ -20,9 +22,15 @@ struct SampleList: View {
     @State
     private var samples: IdentifiedArray = [
         Sample(
-            name: "Observable Store",
+            name: "Simple Store",
             view: AnyView(
-                ObservableStoreSample()
+                SimpleStoreSample()
+            )
+        ),
+        Sample(
+            name: "Using Store",
+            view: AnyView(
+                UsingStoreSample()
             )
         ),
         Sample(
@@ -53,7 +61,7 @@ struct SampleList: View {
             .navigationTitle("Silo Samples")
         } detail: {
             if  let id = selectedID,
-                let selection = samples[id] {
+                let selection = samples[id: id] {
                 selection
                     .view
                     .navigationTitle(selection.name)

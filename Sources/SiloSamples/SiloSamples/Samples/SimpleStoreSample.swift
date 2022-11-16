@@ -1,5 +1,5 @@
 //
-//  ObservableStoreSample.swift
+//  SimpleStoreSample.swift
 //  SiloSamples
 //
 //  Created by Mark Onyschuk on 2022-11-06.
@@ -35,15 +35,17 @@ struct Counter: Reducer {
 }
 
 // MARK: - Sample View
-
-struct ObservableStoreSample: View {
+struct SimpleStoreSample: View {
     @StateObject
     private var counter = Store(Counter(), state: Counter.State())
     
     var body: some View {
-        VStack {
-            Text("Current count = \(counter.value)")
-            HStack {
+        Form {
+            Section {
+                Text("`Store` objects declared `@StateObject` drive view updates directly.")
+            }
+            Section {
+                Text("\(counter.value)")
                 Button {
                     counter.dispatch(.increment)
                 } label: {
@@ -55,13 +57,12 @@ struct ObservableStoreSample: View {
                     Text("Decrement")
                 }
             }
-            .buttonStyle(.bordered)
         }
     }
 }
 
 struct ObservableStore_Previews: PreviewProvider {
     static var previews: some View {
-        ObservableStoreSample()
+        SimpleStoreSample()
     }
 }

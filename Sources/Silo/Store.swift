@@ -193,7 +193,7 @@ final class StateStorage<State>: ObservableObject where State: States {
     let mutex: Mutex
 
     @Published
-    private var container: Container
+    var container: Container
     
     /// storage value
     var value: State {

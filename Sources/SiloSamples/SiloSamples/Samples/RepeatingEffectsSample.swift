@@ -74,9 +74,12 @@ struct RepeatingEffectsSample: View {
     private var ticker = Store(Ticker(), state: Ticker.State())
     
     var body: some View {
-        VStack {
-            Text("Current count = \(ticker.value)")
-            HStack {
+        Form {
+            Section {
+                Text("`Effect`s are asynchronous functions which generate `Actions`. Their lifetime is limited to the lifetime of their associated `Store`s.")
+            }
+            Section {
+                Text("\(ticker.value)")
                 Button {
                     ticker.dispatch(.startTicking)
                 } label: {
@@ -88,7 +91,6 @@ struct RepeatingEffectsSample: View {
                     Text("Finish")
                 }
             }
-            .buttonStyle(.bordered)
         }
     }
 }
