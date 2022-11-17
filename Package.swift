@@ -17,6 +17,7 @@ let package = Package(
             targets: ["Silo"]),
     ],
     dependencies: [
+        .package(url: "git@github.com:Dimension-North-Inc/Expect.git", from: "1.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "0.5.0")
     ],
     targets: [
@@ -30,6 +31,6 @@ let package = Package(
         ),
         .testTarget(
             name: "SiloTests",
-            dependencies: ["Silo"]),
+            dependencies: ["Silo", "Expect"]),
     ]
 )
