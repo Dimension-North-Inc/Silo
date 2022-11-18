@@ -23,4 +23,4 @@ been coded to support Cocoa-style undo/redo.
 
 `Silo` includes the `Expect` package for more fluent test case expressions. We're still working on how to test this package though.
 This code is central stuff, so it's not hooked for mocking in the same way an application might be, which makes testing more difficult. 
-`Storage` faced the same challenges in testing.
+`Storage` faced the same challenges in testing. 
