@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "expect",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:Dimension-North-Inc/Expect.git",
+      "state" : {
+        "revision" : "7f21a0c467e051400da4036c1cd2520545197e09",
+        "version" : "1.0.0"
+      }
+    },
+    {
       "identity" : "swift-collections",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections.git",

@@ -158,7 +158,7 @@ extension Reducer where Body: Reducer, Body.State == Self.State, Body.Action == 
     /// Where `body` is defined, forward `reduce` reqiuests to the body
     /// - Parameters:
     ///   - state: reducer-native state
-    ///   - action: an action
+    ///   - action: reducer-native action
     /// - Returns: an optional effect associated with the received action
     public func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
         return body.reduce(state: &state, action: action)
@@ -167,7 +167,7 @@ extension Reducer where Body: Reducer, Body.State == Self.State, Body.Action == 
     /// Where `body` is defined, forward `reduce` reqiuests to the body
     /// - Parameters:
     ///   - state: reducer-native state
-    ///   - action: an action
+    ///   - action: any action
     /// - Returns: an optional effect associated with the received action
     public func reduce(state: inout State, action: any Actions) -> Effect<any Actions>? {
         return body.reduce(state: &state, action: action)

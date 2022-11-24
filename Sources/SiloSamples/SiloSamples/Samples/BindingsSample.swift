@@ -14,8 +14,11 @@ struct UserReducer: Reducer {
     struct State: States {
         @BindingState var name: String = ""
         @BindingState var isVerified: Bool = false
+        
+        var accessCount: Int = 0
     }
     enum Action: Actions {
+        case incrementAccessCount
     }
 
     var body: some Reducer<State, Action> {
@@ -29,6 +32,16 @@ struct UserReducer: Reducer {
             }
             
             return true
+        }
+        
+        Reduce {
+            state, action in
+            switch action {
+            case .incrementAccessCount:
+                state.accessCount += 1
+            }
+            
+            return .none
         }
     }
 }
@@ -47,6 +60,12 @@ struct BindingsSample: View {
                 TextField("Name", text: user.$name)
                 Toggle(isOn: user.$isVerified) {
                     Text("Is Verified")
+                }
+                Text("\(user.accessCount)")
+            }
+            Section {
+                Button("Increment Access Count") {
+                    user.dispatch(.incrementAccessCount)
                 }
             }
         }
