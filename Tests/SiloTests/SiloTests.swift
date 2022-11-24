@@ -9,6 +9,7 @@ final class SiloTests: XCTestCase {
         struct State: States {
             var foo: Int
             var bar: String
+            var baz: Baz.State
         }
         enum Action: Actions {
             case updateFoo(Int)
@@ -25,30 +26,27 @@ final class SiloTests: XCTestCase {
                 
                 return .none
             }
+            ReduceChild(state: \.baz, reducer: Baz())
         }
     }
     
     struct Baz: Reducer {
         struct State: States {
-            var id = UUID()
             var baz: Bool
             var buq: Float
         }
         
         enum Action: Actions {
-            case updateBaz(UUID, Bool)
-            case updateBuq(UUID, Float)
+            case updateBaz(Bool)
+            case updateBuq(Float)
         }
         
         var body: some Reducer<State, Action> {
             Reduce {
                 state, action in
                 switch action {
-                case let .updateBaz(id, value) where id == state.id:
-                    state.baz = value
-                case let .updateBuq(id, value) where id == state.id:
-                    state.buq = value
-                default: break
+                case let .updateBaz(value): state.baz = value
+                case let .updateBuq(value): state.buq = value
                 }
                 
                 return .none
@@ -58,6 +56,22 @@ final class SiloTests: XCTestCase {
     
     
     func testExample() throws {
-        expect(true) == true
+        let store = Store(
+            Foo(),
+            state: Foo.State(
+                foo: 1,
+                bar: "A",
+                baz: Baz.State(
+                    baz: true,
+                    buq: 3.14
+                )
+            )
+        )
+        
+        expect(store.state.value.baz.buq) == 3.14
+
+        store.dispatch(Baz.Action.updateBuq(3))
+        
+        expect(store.state.value.baz.buq) == 3
     }
 }

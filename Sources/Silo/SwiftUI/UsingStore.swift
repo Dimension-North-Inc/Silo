@@ -122,6 +122,7 @@ struct UsingStore_Previews: PreviewProvider {
                     Text("\(value)")
                 }
             }
+            
             Section("Only Updates Above") {
                 Button("Increment", action: { store.dispatch(.increment) })
                 Button("Decrement", action: { store.dispatch(.decrement) })
