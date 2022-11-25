@@ -71,7 +71,6 @@ final class SiloTests: XCTestCase {
         expect(store.state.value.baz.buq) == 3.14
 
         store.dispatch(Baz.Action.updateBuq(3))
-        
         expect(store.state.value.baz.buq) == 3
     }
 }

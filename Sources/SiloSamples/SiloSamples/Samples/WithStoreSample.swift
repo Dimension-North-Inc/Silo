@@ -47,16 +47,16 @@ struct DoubleCounter: Feature {
 }
 
 // MARK: - Sample View
-struct UsingStoreSample: View {
+struct WithStoreSample: View {
     private var store = Store<DoubleCounter>()
     
     var body: some View {
         Form {
             Section {
-                Text("`UsingStore` limits view updates based on store substate changes. Optimize complex views with one or more `UsingStore` views.")
+                Text("`WithStore` limits view updates based on store substate changes. Optimize complex views with one or more `WithStore` views.")
             }
             Section {
-                UsingStore(store, keyPath: \.value) {
+                WithStore(store, keyPath: \.value) {
                     value in
                     Text("\(value)")
                 }
@@ -67,7 +67,7 @@ struct UsingStoreSample: View {
             }
             
             Section {
-                UsingStore(store, keyPath: \.value2) {
+                WithStore(store, keyPath: \.value2) {
                     value in
                     Text("\(value)")
                 }
@@ -81,8 +81,8 @@ struct UsingStoreSample: View {
     }
 }
 
-struct UsingStoreSample_Previews: PreviewProvider {
+struct WithStoreSample_Previews: PreviewProvider {
     static var previews: some View {
-        UsingStoreSample()
+        WithStoreSample()
     }
 }

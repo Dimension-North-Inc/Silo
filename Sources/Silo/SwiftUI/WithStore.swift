@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  WithStore.swift
 //  Silo
 //
 //  Created by Mark Onyschuk on 2022-11-16.
@@ -8,13 +8,13 @@
 
 import SwiftUI
 
-/// A View used to observe and update on store state updates.
+/// A View which observes and updates on store state updates.
 ///
 /// Views with simple underyling stores may opt ot observe their stores directly as `@ObservableObject`s,
 /// On each update of said stores, the entire view will be recalculated and redisplayed. For views with more complex
 /// stores containing a large amount of state, use `UsingStore` to limit view updates based on store substate changes.
 ///
-public struct UsingStore<Reducer, Value, Content>: View where Reducer: Silo.Reducer, Content: View {
+public struct WithStore<Reducer, Value, Content>: View where Reducer: Silo.Reducer, Content: View {
     private var store: Store<Reducer>
     private let isEqual: (Value, Value) -> Bool
     private let keyPath: KeyPath<Store<Reducer>, Value>
@@ -117,7 +117,7 @@ struct UsingStore_Previews: PreviewProvider {
     static var previews: some View {
         Form {
             Section {
-                UsingStore(store, keyPath: \.value) {
+                WithStore(store, keyPath: \.value) {
                     value in
                     Text("\(value)")
                 }
@@ -129,7 +129,7 @@ struct UsingStore_Previews: PreviewProvider {
             }
             
             Section {
-                UsingStore(store, keyPath: \.value2) {
+                WithStore(store, keyPath: \.value2) {
                     value in
                     Text("\(value)")
                 }

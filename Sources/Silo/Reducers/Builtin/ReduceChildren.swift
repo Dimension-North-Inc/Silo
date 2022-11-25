@@ -8,8 +8,8 @@
 
 import Foundation
 
-/// A reducer which operates on `Identifiable` elements among a collection of substates.
-public struct ReduceChildren<State: States, Child: Reducer, Substates>: Reducer where Substates: RangeReplaceableCollection, Substates.Element: Identifiable, Substates.Element == Child.State {
+/// A  `body` reducer which operates on `Identifiable` elements among a collection of substates.
+public struct ReduceChildren<State: States, Child: Reducer, Substates>: SubstateReducer where Substates: RangeReplaceableCollection, Substates.Element: Identifiable, Substates.Element == Child.State {
     var child: Child
     var substates: WritableKeyPath<State, Substates>
     var identifier: (Child.Action) -> Substates.Element.ID?
@@ -40,9 +40,5 @@ public struct ReduceChildren<State: States, Child: Reducer, Substates>: Reducer 
             state[keyPath: substates] = children
         }
         return effect
-    }
-    
-    public var isSubstateReducer: Bool {
-        return true
     }
 }

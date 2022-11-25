@@ -85,6 +85,11 @@ public protocol Reducer<State, Action> {
     associatedtype State: States
     
     /// reducer-native actions
+    ///
+    /// All reducers, by virtue of their `reduce(state:action:)` function override
+    /// with action argument `any Actions` can process *any* `Action` type. The `Action`
+    /// associated type, however, refers to what might notionally be considered the **native**
+    /// `Action` type recognized by the reducer.
     associatedtype Action: Actions
     
     /// Reduces `state` as result of receiving a reducer-native `action`.
@@ -135,16 +140,6 @@ public protocol Reducer<State, Action> {
     /// ```
     @ReducerBuilder<State, Action>
     var body: Body { get }
-    
-    /// Indicates whether a receiver is a reducer of substates.
-    ///
-    /// Library-defined reducers meant to handle substates (eg. `ReduceChild`, `ReduceChildren`, or
-    /// `ReduceOptionalChild`) report themselves to be substate reducers, and are asked to reduce their
-    /// substates prior to local state reducers.
-    ///
-    /// The protocol provides a default implementation of `false` for this property, as most reducers you create
-    /// work on local state.
-    var isSubstateReducer: Bool { get }
 }
 
 extension Reducer where Body == Never {
@@ -183,8 +178,8 @@ extension Reducer {
             return .none
         }
     }
-    
-    public var isSubstateReducer: Bool {
-        return false
-    }
 }
+
+
+/// TODO: Document this
+public protocol SubstateReducer: Reducer {}

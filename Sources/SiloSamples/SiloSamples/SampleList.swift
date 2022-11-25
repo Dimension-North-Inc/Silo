@@ -30,7 +30,7 @@ struct SampleList: View {
         Sample(
             name: "Using Store",
             view: AnyView(
-                UsingStoreSample()
+                WithStoreSample()
             )
         ),
         Sample(

@@ -131,8 +131,8 @@ struct ArrayReducer<State: States, Action: Actions>: Reducer {
         self.reducers = reducers.sorted {
             r1, r2 in
             
-            let p1 = r1.isSubstateReducer ? 0 : 1
-            let p2 = r2.isSubstateReducer ? 0 : 1
+            let p1 = r1 is any SubstateReducer ? 0 : 1
+            let p2 = r2 is any SubstateReducer ? 0 : 1
             
             return p1 < p2
         }

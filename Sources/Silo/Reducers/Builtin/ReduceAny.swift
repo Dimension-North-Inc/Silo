@@ -7,7 +7,8 @@
 //
 
 import Foundation
-/// A reducer constructed using a closure meant to reduce actions not directly targeted at the reducer.
+
+/// A `body` reducer meant to reduce *any* action, not just those notionally associated with the reducer.
 public struct ReduceAny<State: States, Action: Actions>: Reducer {
     var impl: (inout State, any Actions) -> Effect<any Actions>?
     public init(impl: @escaping (inout State, any Actions) -> Effect<any Actions>?) {

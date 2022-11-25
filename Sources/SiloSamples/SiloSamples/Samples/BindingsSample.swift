@@ -56,14 +56,14 @@ struct BindingsSample: View {
             Section {
                 Text("`BindingReducer` and `@BindingState` synthesize reducer actions corresponding to simple state updates.")
             }
-            Section {
+            Section("Binding-Generated Actions") {
                 TextField("Name", text: user.$name)
                 Toggle(isOn: user.$isVerified) {
                     Text("Is Verified")
                 }
-                Text("\(user.accessCount)")
             }
-            Section {
+            Section("`.dispatch`-Generated Actions") {
+                Text("\(user.accessCount)")
                 Button("Increment Access Count") {
                     user.dispatch(.incrementAccessCount)
                 }
