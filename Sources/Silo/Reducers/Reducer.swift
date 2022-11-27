@@ -100,20 +100,6 @@ public protocol Reducer<State, Action> {
     /// - Returns: an optional effect associated with the received action
     func reduce(state: inout State, action: Action) -> Effect<any Actions>?
     
-    /// Reduces `state` as result of receiving **any** `action`.
-    ///
-    /// Often, reducers are only interested in receiving their own native `Action` type.
-    ///
-    /// Reducers may however, receive **any** `Action` type defined by the application.
-    /// As a result, the protocol provides a default implementation which ignores actions not matching
-    /// the reducer-native `Action` type.
-    ///
-    /// - Parameters:
-    ///   - state: reducer-native state
-    ///   - action: an action
-    /// - Returns: an optional effect associated with the received action
-    func reduce(state: inout State, action: any Actions) -> Effect<any Actions>?
-    
     associatedtype Body
     
     /// Compose reducer logic declaratively with a `body` declaration.

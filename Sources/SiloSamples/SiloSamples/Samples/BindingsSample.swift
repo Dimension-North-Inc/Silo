@@ -12,18 +12,18 @@ import SwiftUI
 // MARK: - Reducer
 struct UserReducer: Reducer {
     struct State: States {
-        @BindingState var name: String = ""
-        @BindingState var isVerified: Bool = false
+        @Bindable var name: String = ""
+        @Bindable var isVerified: Bool = false
         
         var accessCount: Int = 0
     }
-    enum Action: Actions & BindableAction {
+    enum Action: BindableAction {
         case incrementAccessCount
         case binding(BindingAction<State>)
     }
 
     var body: some Reducer<State, Action> {
-        BindingReducer {
+        ReduceBindings {
             state, action in
             switch action.keyPath {
             case \.$name:       print("will update name: \(action.value)")
@@ -34,7 +34,6 @@ struct UserReducer: Reducer {
             
             return true
         }
-        
         Reduce {
             state, action in
             switch action {
@@ -56,7 +55,7 @@ struct BindingsSample: View {
     var body: some View {
         Form {
             Section {
-                Text("`BindingReducer` and `@BindingState` synthesize reducer actions corresponding to simple state updates.")
+                Text("`ReduceBindings` and `@Bindable` synthesize reducer actions corresponding to simple state updates.")
             }
             Section("Binding-Generated Actions") {
                 TextField("Name", text: user.$name)

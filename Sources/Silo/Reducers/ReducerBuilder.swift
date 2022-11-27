@@ -51,12 +51,6 @@ public struct ReducerBuilder<State: States, Action: Actions> {
         expression
     }
     
-    public static func buildLimitedAvailability(
-        _ wrapped: some Reducer<State, Action>
-    ) -> some Reducer<State, Action> {
-        AnyReducer(reducer: wrapped)
-    }
-    
     public static func buildOptional(
         _ wrapped: (some Reducer<State, Action>)?
     ) -> some Reducer<State, Action> {
@@ -84,20 +78,6 @@ public struct ReducerBuilder<State: States, Action: Actions> {
 
 
 // MARK: - Internal Reducer Types
-
-/// A type-erased reducer.
-struct AnyReducer<State: States, Action: Actions>: Reducer {
-    var impl: (inout State, Action) -> Effect<any Actions>?
-    init<Wrapped: Reducer<State, Action>>(reducer: Wrapped) {
-        self.impl = {
-            state, action in reducer.reduce(state: &state, action: action)
-        }
-    }
-    
-    func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
-        impl(&state, action)
-    }
-}
 
 /// An empty reducer.
 struct EmptyReducer<State: States, Action: Actions>: Reducer {
@@ -173,6 +153,5 @@ struct ArrayReducer<State: States, Action: Actions>: Reducer {
             return .none
         }
     }
-
 }
 
