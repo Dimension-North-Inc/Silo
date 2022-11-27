@@ -6,8 +6,8 @@
 //  Copyright © 2022 Dimension North Inc. All rights reserved.
 //
 
-import Foundation
 import OSLog
+import Foundation
 
 /// A reducer which logs actions, incoming, and outgoing states.
 ///

@@ -97,6 +97,16 @@ public struct BindingAction<State: States>: Actions, @unchecked Sendable {
     var update: @Sendable (inout State) -> Void
 }
 
+public protocol BindableAction: Actions {
+  /// The root state type that contains bindable fields.
+  associatedtype State
+
+  /// Embeds a binding action in this action type.
+  ///
+  /// - Returns: A binding action.
+  static func binding(_ action: BindingAction<State>) -> Self
+}
+
 /// A `Reducer` that reduces `BindingAction<State>` actions onto state.
 ///
 /// When creating a custom reducer with state properties annotated  using the  `BindingState`
@@ -123,14 +133,12 @@ public struct BindingAction<State: States>: Actions, @unchecked Sendable {
 /// `BindingReducer` accepts an optional `shouldUpdate` closure which is called for each action
 /// it reduces. The action can be used to identify both substate and value to be updated by the reducer. 
 ///
-public struct BindingReducer<State: States, Action: Actions>: Reducer {
+public struct BindingReducer<State: States, Action: BindableAction>: Reducer {
     public func reduce(state: inout State, action: Action) -> Effect<Actions>? {
-        return .none
-    }
-    public func reduce(state: inout State, action: any Actions) -> Effect<Actions>? {
-        if let action = action as? BindingAction<State>, shouldUpdate(&state, action) {
+        if let action = (/Action.binding).extract(from: action) as? BindingAction<State>, shouldUpdate(&state, action) {
             action.update(&state)
         }
+        
         return .none
     }
     
@@ -141,16 +149,18 @@ public struct BindingReducer<State: States, Action: Actions>: Reducer {
     }
 }
 
-extension Store {
+extension Store where Reducer.Action: BindableAction, Reducer.State == Reducer.Action.State {
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<State, BindingState<T>>) -> Binding<T> {
         Binding {
             self.state.value[keyPath: keyPath].wrappedValue
         } set: {
             value, transaction in
             self.dispatch(
-                BindingAction(keyPath: keyPath, value: value, update: {
-                    state in state[keyPath: keyPath].wrappedValue = value
-                })
+                Reducer.Action.binding(
+                    BindingAction(keyPath: keyPath, value: value, update: {
+                        state in state[keyPath: keyPath].wrappedValue = value
+                    })
+                )
             )
         }
     }

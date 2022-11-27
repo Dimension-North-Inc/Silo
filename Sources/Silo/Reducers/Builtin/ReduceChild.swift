@@ -8,20 +8,33 @@
 
 import Foundation
 
+@_exported import CasePaths
+
 /// A `body` reducer which executes a `Child` reducer on substate identified by keypath.
 ///
 /// Where substate is `nil`, the reducer does not execute.
 public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
-    var impl: (inout State, any Actions) -> Effect<any Actions>?
+    var impl: (inout State, Action) -> Effect<any Actions>?
     
     /// Initializes the reducer with a keypath from local to child state, and a child `reducer` used to reduce child state.
     /// - Parameters:
     ///   - substate: a keypath from local to child state
+    ///   - action: a casepath matching a local action wrapping a child action
     ///   - reducer: a child state reducer
-    public init<Child>(state substate: WritableKeyPath<State, Child.State>, reducer: Child) where Child: Reducer {
+    public init<Child: Reducer>(
+        _ substate: WritableKeyPath<State, Child.State>,
+        action path: CasePath<Action, (Child.Action)>,
+        @ReducerBuilder<Child.State, Child.Action> reducer: () -> Child
+    ) {
+        let child = reducer()
+        
         self.impl = {
             state, action in
-            reducer.reduce(state: &state[keyPath: substate], action: action)
+            if let (action) = path.extract(from: action) {
+                return child.reduce(state: &state[keyPath: substate], action: action)
+            } else {
+                return .none
+            }
         }
     }
     
@@ -29,13 +42,21 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     /// **if child state is not nil**.
     /// - Parameters:
     ///   - substate: a keypath from local to child state
+    ///   - action: a casepath matching a local action wrapping a child action
     ///   - reducer: a child state reducer
-    public init<Child>(state substate: WritableKeyPath<State, Child.State?>, reducer: Child) where Child: Reducer {
+    public init<Child: Reducer>(
+        _ substate: WritableKeyPath<State, Child.State?>,
+        action path: CasePath<Action, (Child.Action)>,
+        @ReducerBuilder<Child.State, Child.Action> reducer: () -> Child
+    ) {
+        let child = reducer()
+        
         self.impl = {
             state, action in
-            if var subs = state[keyPath: substate] {
-                let effect = reducer.reduce(state: &subs, action: action)
-                state[keyPath: substate] = subs
+            if let action = path.extract(from: action),
+               var childValue = state[keyPath: substate] {
+                let effect = child.reduce(state: &childValue, action: action)
+                state[keyPath: substate] = childValue
                 return effect
             } else {
                 return .none
@@ -44,9 +65,6 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     }
 
     public func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
-        .none
-    }
-    public func reduce(state: inout State, action: any Actions) -> Effect<any Actions>? {
         impl(&state, action)
     }
 }
