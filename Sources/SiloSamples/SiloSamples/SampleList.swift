@@ -93,7 +93,9 @@ struct SampleList: View {
                     }
                 }
             }
+            #if os(iOS)
             .listStyle(InsetGroupedListStyle())
+            #endif
             .navigationTitle("Silo Samples")
             
         } detail: {
@@ -105,6 +107,7 @@ struct SampleList: View {
                 #if os(iOS)
                     .navigationBarTitleDisplayMode(.inline)
                 #endif
+                    .padding()
             } else {
                 VStack {
                     Image(systemName: "cube.fill")

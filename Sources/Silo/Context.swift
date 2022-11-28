@@ -14,7 +14,9 @@ import Foundation
 ///
 /// ```swift
 ///     var body: some Reducer<State, Action> {
-///         ReduceChild(\.auth, action: /Action.auth)
+///         ReduceChild(\.auth, action: /Action.auth) {
+///             AuthReducer()
+///         }
 ///         InContext(key: AuthStateKey.self, value: \.auth) {
 ///             // ...
 ///         }

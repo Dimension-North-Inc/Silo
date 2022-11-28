@@ -57,13 +57,13 @@ struct BindingsSample: View {
             Section {
                 Text("`ReduceBindings` and `@Bindable` synthesize reducer actions corresponding to simple state updates.")
             }
-            Section("Binding-Generated Actions") {
+            Section("Implicit Bindings Action Dispatch") {
                 TextField("Name", text: user.$name)
                 Toggle(isOn: user.$isVerified) {
                     Text("Is Verified")
                 }
             }
-            Section("`.dispatch`-Generated Actions") {
+            Section("Explicit Action Dispatch via `dispatch(_:)`") {
                 Text("\(user.accessCount)")
                 Button("Increment Access Count") {
                     user.dispatch(.incrementAccessCount)

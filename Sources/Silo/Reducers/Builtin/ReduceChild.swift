@@ -60,6 +60,50 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
         }
     }
 
+    /// Initializes the reducer with a keypath from local to child state, and a child `reducer` used to reduce child state.
+    /// - Parameters:
+    ///   - substate: a keypath from local to child state
+    ///   - action: a casepath matching a local action wrapping a child action
+    ///   - reducer: a child state reducer
+    public init<Child: Reducer>(
+        _ substate: WritableKeyPath<State, Child.State>,
+        action path: CasePath<Action, (Child.Action)>,
+        reducer: @autoclosure @escaping () -> Child
+    ) {
+        self.impl = {
+            state, action in
+            if let action = path.extract(from: action) {
+                return reducer().reduce(state: &state[keyPath: substate], action: action)
+            } else {
+                return .none
+            }
+        }
+    }
+    
+    /// Initializes the reducer with a keypath from local to child state, and a child `reducer` used to reduce child state
+    /// **if child state is not nil**.
+    /// - Parameters:
+    ///   - substate: a keypath from local to child state
+    ///   - action: a casepath matching a local action wrapping a child action
+    ///   - reducer: a child state reducer
+    public init<Child: Reducer>(
+        _ substate: WritableKeyPath<State, Child.State?>,
+        action path: CasePath<Action, (Child.Action)>,
+        reducer: @autoclosure @escaping () -> Child
+    ) {
+        self.impl = {
+            state, action in
+            if let action = path.extract(from: action),
+               var childValue = state[keyPath: substate] {
+                let effect = reducer().reduce(state: &childValue, action: action)
+                state[keyPath: substate] = childValue
+                return effect
+            } else {
+                return .none
+            }
+        }
+    }
+
     public func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
         impl(&state, action)
     }
