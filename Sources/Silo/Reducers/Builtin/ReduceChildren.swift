@@ -7,10 +7,11 @@
 //
 
 import Foundation
+
 @_exported import CasePaths
 @_exported import IdentifiedCollections
 
-/// A  `body` reducer which operates on `Identifiable` elements among a collection of substates.
+/// A  `body` reducer used to reduce one of many `Child`  substates, stored as a collection of `Identifiable` elements..
 public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
     var impl: (inout State, Action) -> Effect<any Actions>?
 

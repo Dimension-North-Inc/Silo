@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// A `body` reducer meant to reduce actions associated with the reducer.
+/// A `body` reducer used to reduce local state.
 public struct Reduce<State: States, Action: Actions>: Reducer {
     var impl: (inout State, Action) -> Effect<any Actions>?
     public init(impl: @escaping (inout State, Action) -> Effect<any Actions>?) {

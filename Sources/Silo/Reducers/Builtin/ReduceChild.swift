@@ -10,7 +10,7 @@ import Foundation
 
 @_exported import CasePaths
 
-/// A `body` reducer which executes a `Child` reducer on substate identified by keypath.
+/// A `body` reducer used to reduce `Child` substates identified by keypath.
 ///
 /// Where substate is `nil`, the reducer does not execute.
 public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
@@ -30,7 +30,7 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
         
         self.impl = {
             state, action in
-            if let (action) = path.extract(from: action) {
+            if let action = path.extract(from: action) {
                 return child.reduce(state: &state[keyPath: substate], action: action)
             } else {
                 return .none
