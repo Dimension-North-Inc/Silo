@@ -17,7 +17,7 @@ struct UserReducer: Reducer {
         
         var accessCount: Int = 0
     }
-    enum Action: BindableAction {
+    enum Action: BindableActions {
         case incrementAccessCount
         case binding(BindingAction<State>)
     }

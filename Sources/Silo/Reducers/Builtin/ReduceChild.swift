@@ -24,14 +24,12 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State>,
         action path: CasePath<Action, (Child.Action)>,
-        @ReducerBuilder<Child.State, Child.Action> reducer: () -> Child
+        @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
     ) {
-        let child = reducer()
-        
         self.impl = {
             state, action in
             if let action = path.extract(from: action) {
-                return child.reduce(state: &state[keyPath: substate], action: action)
+                return reducer().reduce(state: &state[keyPath: substate], action: action)
             } else {
                 return .none
             }
@@ -47,15 +45,13 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State?>,
         action path: CasePath<Action, (Child.Action)>,
-        @ReducerBuilder<Child.State, Child.Action> reducer: () -> Child
+        @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
     ) {
-        let child = reducer()
-        
         self.impl = {
             state, action in
             if let action = path.extract(from: action),
                var childValue = state[keyPath: substate] {
-                let effect = child.reduce(state: &childValue, action: action)
+                let effect = reducer().reduce(state: &childValue, action: action)
                 state[keyPath: substate] = childValue
                 return effect
             } else {

@@ -18,15 +18,13 @@ public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
     public init<Child: Reducer, ID: Hashable & Sendable>(
         _ substate: WritableKeyPath<State, IdentifiedArray<ID, Child.State>>,
         action path: CasePath<Action, (ID, Child.Action)>,
-        @ReducerBuilder<Child.State, Child.Action> reducer: () -> Child
+        @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
     ) {
-        let child = reducer()
-        
         self.impl = {
             state, action in
             if let (id, action) = path.extract(from: action),
                var childValue = state[keyPath: substate][id: id] {
-                let effect = child.reduce(state: &childValue, action: action)
+                let effect = reducer().reduce(state: &childValue, action: action)
                 state[keyPath: substate][id: id] = childValue
                 return effect
             } else {

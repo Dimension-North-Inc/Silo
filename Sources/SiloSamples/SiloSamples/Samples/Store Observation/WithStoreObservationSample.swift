@@ -47,13 +47,19 @@ struct DoubleCounter: Feature {
 }
 
 // MARK: - Sample View
-struct WithStoreSample: View {
+struct WithStoreObservationSample: View {
     private var store = Store<DoubleCounter>()
     
     var body: some View {
         Form {
             Section {
-                Text("`WithStore` limits view updates based on store substate changes. Optimize complex views with one or more `WithStore` views.")
+                Text(
+                    """
+                    `Store`s **not** annotated with `@StateObject` or `@ObservableObject` *can still update* portions of your view body using a `WithStore` view.
+
+                    Use this pattern for stores with large states or states whose changes are small and localized between updates.
+                    """
+                )
             }
             Section {
                 WithStore(store, keyPath: \.value) {
@@ -81,8 +87,8 @@ struct WithStoreSample: View {
     }
 }
 
-struct WithStoreSample_Previews: PreviewProvider {
+struct WithStoreObservationSample_Previews: PreviewProvider {
     static var previews: some View {
-        WithStoreSample()
+        WithStoreObservationSample()
     }
 }

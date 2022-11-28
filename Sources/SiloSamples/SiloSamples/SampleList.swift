@@ -12,56 +12,93 @@ import IdentifiedCollections
 import SwiftUI
 
 struct SampleList: View {
+    struct SampleGroup: Identifiable {
+        var id: String {
+            name
+        }
+        
+        var name: String
+        var samples: IdentifiedArrayOf<Sample>
+    }
     struct Sample: Identifiable {
-        var id = UUID()
+        var id: String {
+            name
+        }
         
         var name: String
         var view: AnyView
     }
     
-    @State
-    private var samples: IdentifiedArray = [
-        Sample(
-            name: "Simple Store",
-            view: AnyView(
-                SimpleStoreSample()
-            )
+    private var sections: [SampleGroup] = [
+        SampleGroup(
+            name: "Observation",
+            samples: [
+                Sample(
+                    name: "Store Observation",
+                    view: AnyView(
+                        StoreObservationSample()
+                    )
+                ),
+                Sample(
+                    name: "WithStore Observation",
+                    view: AnyView(
+                        WithStoreObservationSample()
+                    )
+                ),
+            ]
         ),
-        Sample(
-            name: "Using Store",
-            view: AnyView(
-                WithStoreSample()
-            )
+        SampleGroup(
+            name: "Side Effects",
+            samples: [
+                Sample(
+                    name: "Repeating Effects",
+                    view: AnyView(
+                        RepeatingEffectsSample()
+                    )
+                ),
+            ]
         ),
-        Sample(
-            name: "Repeating Effects",
-            view: AnyView(
-                RepeatingEffectsSample()
-            )
-        ),
-        Sample(
-            name: "Binding Actions",
-            view: AnyView(
-                BindingsSample()
-            )
+        SampleGroup(
+            name: "SwiftUI Support",
+            samples: [
+                Sample(
+                    name: "Bindings",
+                    view: AnyView(
+                        BindingsSample()
+                    )
+                ),
+            ]
         ),
     ]
+
+    private var allSamples: IdentifiedArrayOf<Sample> {
+        IdentifiedArray(uniqueElements: sections.flatMap(\.samples))
+    }
 
     @State
     private var selectedID: Sample.ID?
 
     var body: some View {
         NavigationSplitView {
-            List(samples, selection: $selectedID) {
-                sample in
-                NavigationLink(value: sample.id) {
-                    Label(sample.name, systemImage: "cube.fill")
+            List(selection: $selectedID) {
+                ForEach(sections) {
+                    section in
+                    Section(section.name) {
+                        ForEach(section.samples) {
+                            sample in
+                            NavigationLink(value: sample.id) {
+                                Label(sample.name, systemImage: "cube.fill")
+                            }
+                        }
+                    }
                 }
             }
+            .listStyle(InsetGroupedListStyle())
             .navigationTitle("Silo Samples")
+            
         } detail: {
             if  let id = selectedID,
-                let selection = samples[id: id] {
+                let selection = allSamples[id: id] {
                 selection
                     .view
                     .navigationTitle(selection.name)

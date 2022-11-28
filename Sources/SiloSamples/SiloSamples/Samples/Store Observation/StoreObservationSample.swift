@@ -35,14 +35,20 @@ struct Counter: Reducer {
 }
 
 // MARK: - Sample View
-struct SimpleStoreSample: View {
+struct StoreObservationSample: View {
     @StateObject
     private var counter = Store(Counter(), state: Counter.State())
     
     var body: some View {
         Form {
             Section {
-                Text("`Store` objects declared `@StateObject` drive view updates directly.")
+                Text(
+                    """
+                    `Store`s annotated with `@StateObject` or `@ObservedObject` trigger view updates whenever their content changes.
+                                         
+                    Use this pattern for stores containing simple state, or state that changes substantially between updates.
+                    """
+                )
             }
             Section {
                 Text("\(counter.value)")
@@ -61,8 +67,8 @@ struct SimpleStoreSample: View {
     }
 }
 
-struct ObservableStore_Previews: PreviewProvider {
+struct StoreObservationSample_Previews: PreviewProvider {
     static var previews: some View {
-        SimpleStoreSample()
+        StoreObservationSample()
     }
 }
