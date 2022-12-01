@@ -1,5 +1,5 @@
 //
-//  WithStore.swift
+//  WithSubstate.swift
 //  Silo
 //
 //  Created by Mark Onyschuk on 2022-11-16.
@@ -8,13 +8,13 @@
 
 import SwiftUI
 
-/// A View which observes and updates on store state updates.
+/// A View which observes and updates on store substate updates.
 ///
 /// Views with simple underyling stores may opt ot observe their stores directly as `@ObservableObject`s,
 /// On each update of said stores, the entire view will be recalculated and redisplayed. For views with more complex
-/// stores containing a large amount of state, use `UsingStore` to limit view updates based on store substate changes.
+/// stores containing a large amount of state, use `WithSubstate` to limit view updates based on store substate changes.
 ///
-public struct WithStore<Reducer, Value, Content>: View where Reducer: Silo.Reducer, Content: View {
+public struct WithSubstate<Reducer, Value, Content>: View where Reducer: Silo.Reducer, Content: View {
     private var store: Store<Reducer>
     private let isEqual: (Value, Value) -> Bool
     private let keyPath: KeyPath<Store<Reducer>, Value>
@@ -27,9 +27,7 @@ public struct WithStore<Reducer, Value, Content>: View where Reducer: Silo.Reduc
     public var body: some View {
         content(value)
         // on store value update, reassign `value`
-            .onReceive(store.state.$container) {
-                _ in
-                
+            .onReceive(store.objectDidChange) {
                 let v0 = value
                 let v1 = store[keyPath: keyPath]
                 
@@ -54,6 +52,8 @@ public struct WithStore<Reducer, Value, Content>: View where Reducer: Silo.Reduc
         self.content = content
 
         self._value  = State(initialValue: store[keyPath: keyPath])
+
+        store.objectWillChange.isSilenced = true
     }
 
     /// Initializes the view to display substate `keyPath` of `store` on update.
@@ -66,10 +66,12 @@ public struct WithStore<Reducer, Value, Content>: View where Reducer: Silo.Reduc
         self.store   = store
         self.keyPath = keyPath
         self.isEqual = { v0, v1 in v0 == v1 }
-
+        
         self.content = content
-
+        
         self._value  = State(initialValue: store[keyPath: keyPath])
+        
+        store.objectWillChange.isSilenced = true
     }
 
 }
@@ -117,7 +119,7 @@ struct UsingStore_Previews: PreviewProvider {
     static var previews: some View {
         Form {
             Section {
-                WithStore(store, keyPath: \.value) {
+                WithSubstate(store, keyPath: \.value) {
                     value in
                     Text("\(value)")
                 }
@@ -129,7 +131,7 @@ struct UsingStore_Previews: PreviewProvider {
             }
             
             Section {
-                WithStore(store, keyPath: \.value2) {
+                WithSubstate(store, keyPath: \.value2) {
                     value in
                     Text("\(value)")
                 }

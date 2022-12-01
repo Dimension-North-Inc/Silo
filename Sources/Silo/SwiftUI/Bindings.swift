@@ -102,7 +102,7 @@ extension Bindable: Equatable where Value: Equatable {}
 /// When adding a `ReduceBindings` to your custom reducer body, actions are
 /// reported back to you in the reducers `shouldUpdate` closure.
 ///
-public struct BindingAction<State: States>: Actions, @unchecked Sendable {
+public struct BindingAction<State: States>: @unchecked Actions {
     /// the action's aassociated keypath
     public let keyPath: PartialKeyPath<State>
     /// the action's associated value
@@ -199,7 +199,7 @@ public struct ReduceBindings<State: States, Action: BindableActions>: Reducer {
 extension Store where Reducer.Action: BindableActions, Reducer.State == Reducer.Action.State {
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<State, Bindable<T>>) -> Binding<T> {
         Binding {
-            self.state.value[keyPath: keyPath].wrappedValue
+            self.state[keyPath: keyPath].wrappedValue
         } set: {
             value, transaction in
             self.dispatch(

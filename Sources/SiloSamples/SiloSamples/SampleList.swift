@@ -40,9 +40,9 @@ struct SampleList: View {
                     )
                 ),
                 Sample(
-                    name: "WithStore Observation",
+                    name: "WithSubstate Observation",
                     view: AnyView(
-                        WithStoreObservationSample()
+                        WithSubstateObservationSample()
                     )
                 ),
             ]

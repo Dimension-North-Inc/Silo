@@ -52,15 +52,11 @@ struct StoreObservationSample: View {
             }
             Section {
                 Text("\(counter.value)")
-                Button {
+                Button("Increment") {
                     counter.dispatch(.increment)
-                } label: {
-                    Text("Increment")
                 }
-                Button {
+                Button("Decrement") {
                     counter.dispatch(.decrement)
-                } label: {
-                    Text("Decrement")
                 }
             }
         }

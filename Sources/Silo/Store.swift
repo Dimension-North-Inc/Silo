@@ -11,16 +11,31 @@ import Foundation
 
 /// A state container
 @dynamicMemberLookup
-public final class Store<Reducer>: ObservableObject  where Reducer: Silo.Reducer {
+public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer {
     private let reducer: Reducer
     private var tasks = [AnyHashable:AnyTask]()
 
-    public typealias State  = Reducer.State
+    public typealias State = Reducer.State
     public typealias Action = Reducer.Action
     
     /// current state
-    var state: StateStorage<State>
-    var stateObserver: AnyCancellable?
+    var mutex = Mutex()
+    var get: () -> State
+    var set: (State) -> Void
+
+    public var objectDidChange  = ObservableStorePublisher()
+    public var objectWillChange = ObservableStorePublisher()
+
+    var state: State {
+        get {
+            mutex.locked { get() }
+        }
+        set {
+            objectWillChange.send()
+            mutex.locked { set(newValue) }
+            objectDidChange.send()
+        }
+    }
     
     /// Initializes the store with a reducer and starting state
     /// - Parameters:
@@ -29,10 +44,10 @@ public final class Store<Reducer>: ObservableObject  where Reducer: Silo.Reducer
     public init(_ reducer: Reducer, state: State) {
         self.reducer = reducer
         
-        self.state = StateStorage(state)
-        self.stateObserver = self.state.objectWillChange.sink {
-            [weak self] in self?.objectWillChange.send()
-        }
+        var value = state
+        
+        self.get = { value }
+        self.set = { value = $0 }
     }
 
     /// Initializes the store with a reducer and starting state derived from a parent store.
@@ -47,10 +62,8 @@ public final class Store<Reducer>: ObservableObject  where Reducer: Silo.Reducer
     public init<Parent>(_ reducer: Reducer, parent: Store<Parent>, keyPath: WritableKeyPath<Parent.State, State>) {
         self.reducer = reducer
         
-        self.state = StateStorage(parent.state, keyPath: keyPath)
-        self.stateObserver = self.state.objectWillChange.sink {
-            [weak self] in self?.objectWillChange.send()
-        }
+        self.get = { parent.state[keyPath: keyPath] }
+        self.set = { parent.state[keyPath: keyPath] = $0 }
     }
 
     deinit {
@@ -60,8 +73,8 @@ public final class Store<Reducer>: ObservableObject  where Reducer: Silo.Reducer
     /// Reduces `action` onto `state`, then executes any returned `Effect`.
     /// - Parameter action: an action to reduce onto `state`
     public func dispatch(_ action: Action) {
-        state.mutex.locked {
-            let effect = reducer.reduce(state: &state.value, action: action)
+        mutex.locked {
+            let effect = reducer.reduce(state: &state, action: action)
             if let effect { execute(operation: effect.operation) }
         }
     }
@@ -69,15 +82,15 @@ public final class Store<Reducer>: ObservableObject  where Reducer: Silo.Reducer
     /// Reduces `action` onto `state`, then executes any returned `Effect`.
     /// - Parameter action: an action to reduce onto `state`
     public func dispatch(_ action: any Actions) {
-        state.mutex.locked {
-            let effect = reducer.reduce(state: &state.value, action: action)
+        mutex.locked {
+            let effect = reducer.reduce(state: &state, action: action)
             if let effect { execute(operation: effect.operation) }
         }
     }
     
     // MARK: - DynamicMemberLookup
     public subscript<T>(dynamicMember keyPath: KeyPath<State, T>) -> T {
-        return state.value[keyPath: keyPath]
+        return state[keyPath: keyPath]
     }
     
     @MainActor
@@ -181,60 +194,6 @@ public final class Store<Reducer>: ObservableObject  where Reducer: Silo.Reducer
     }
 }
 
-
-// MARK: - StateStorage
-final class StateStorage<State>: ObservableObject where State: States {
-    enum Container {
-        case base(State)
-        case derived(getter: () -> State, setter: (State) -> Void)
-    }
-    
-    /// storage lock
-    let mutex: Mutex
-
-    @Published
-    var container: Container
-    
-    /// storage value
-    var value: State {
-        get {
-            mutex.locked {
-                switch container {
-                case let .base(state): return state
-                case let .derived(getter, _): return getter()
-                }
-            }
-        }
-        set {
-            mutex.locked {
-                switch container {
-                case .base(_): container = .base(newValue)
-                case let .derived(_, setter): setter(newValue)
-                }
-            }
-        }
-    }
-    
-    /// Initialize storage with value `state`
-    /// - Parameter state: stored state
-    init(_ state: State) {
-        self.mutex = Mutex()
-        self.container = .base(state)
-    }
-    
-    /// Initializes storage from substate of some `Parent` state.
-    /// - Parameters:
-    ///   - parent: parent state storage
-    ///   - keyPath: a keypath to parent substate
-    init<Parent>(_ parent: StateStorage<Parent>, keyPath: WritableKeyPath<Parent, State>) {
-        self.mutex = parent.mutex
-        self.container = .derived(
-            getter: { parent.value[keyPath: keyPath] },
-            setter: { value in parent.value[keyPath: keyPath] = value }
-        )
-    }
-}
-
 /// A type-erased task.
 public final class AnyTask {
     /// Call this cancellation block to cancel the task manually.
@@ -256,5 +215,26 @@ public final class AnyTask {
 extension Task {
     public func eraseToAnyTask() -> AnyTask {
         AnyTask(self)
+    }
+}
+
+
+/// A Publisher used to notify of `Store` state changes.
+public final class ObservableStorePublisher: Publisher {
+    public typealias Output = Void
+    public typealias Failure = Never
+    
+    /// if `true` then state change updates are silenced.
+    ///
+    /// Used by `WithSubstate` SwiftUI view to selectively observe state changes
+    /// of store substates using `Store`s `objectDidChange` publisher.
+    public var isSilenced = false
+    private var impl = PassthroughSubject<Void, Never>()
+    
+    public func send() {
+        if !isSilenced { impl.send() }
+    }
+    public func receive<S>(subscriber: S) where S : Subscriber, Never == S.Failure, Void == S.Input {
+        impl.receive(subscriber: subscriber)
     }
 }

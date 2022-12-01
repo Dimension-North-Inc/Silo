@@ -14,7 +14,7 @@
 		4D13DEBE2918321200202C06 /* StoreObservationSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEBD2918321200202C06 /* StoreObservationSample.swift */; };
 		4D13DEC12918323B00202C06 /* Silo in Frameworks */ = {isa = PBXBuildFile; productRef = 4D13DEC02918323B00202C06 /* Silo */; };
 		4D13DEC32918360600202C06 /* RepeatingEffectsSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */; };
-		4D1EF92729250E0300F84DE4 /* WithStoreObservationSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1EF92629250E0300F84DE4 /* WithStoreObservationSample.swift */; };
+		4D1EF92729250E0300F84DE4 /* WithSubstateObservationSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1EF92629250E0300F84DE4 /* WithSubstateObservationSample.swift */; };
 		4DD01106291A79BB00D6F346 /* BindingsSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD01105291A79BB00D6F346 /* BindingsSample.swift */; };
 /* End PBXBuildFile section */
 
@@ -28,7 +28,7 @@
 		4D13DEBA2918020E00202C06 /* Silo */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Silo; path = ../..; sourceTree = "<group>"; };
 		4D13DEBD2918321200202C06 /* StoreObservationSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreObservationSample.swift; sourceTree = "<group>"; };
 		4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatingEffectsSample.swift; sourceTree = "<group>"; };
-		4D1EF92629250E0300F84DE4 /* WithStoreObservationSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithStoreObservationSample.swift; sourceTree = "<group>"; };
+		4D1EF92629250E0300F84DE4 /* WithSubstateObservationSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithSubstateObservationSample.swift; sourceTree = "<group>"; };
 		4DD01105291A79BB00D6F346 /* BindingsSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingsSample.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -120,7 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				4D13DEBD2918321200202C06 /* StoreObservationSample.swift */,
-				4D1EF92629250E0300F84DE4 /* WithStoreObservationSample.swift */,
+				4D1EF92629250E0300F84DE4 /* WithSubstateObservationSample.swift */,
 			);
 			path = "Store Observation";
 			sourceTree = "<group>";
@@ -219,7 +219,7 @@
 				4D13DEAD291801FD00202C06 /* SampleList.swift in Sources */,
 				4D13DEC32918360600202C06 /* RepeatingEffectsSample.swift in Sources */,
 				4D13DEAB291801FD00202C06 /* SiloSamplesApp.swift in Sources */,
-				4D1EF92729250E0300F84DE4 /* WithStoreObservationSample.swift in Sources */,
+				4D1EF92729250E0300F84DE4 /* WithSubstateObservationSample.swift in Sources */,
 				4D13DEBE2918321200202C06 /* StoreObservationSample.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

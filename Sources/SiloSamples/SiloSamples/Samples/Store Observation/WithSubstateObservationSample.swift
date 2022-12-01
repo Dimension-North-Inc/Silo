@@ -47,7 +47,8 @@ struct DoubleCounter: Feature {
 }
 
 // MARK: - Sample View
-struct WithStoreObservationSample: View {
+struct WithSubstateObservationSample: View {
+    @StateObject
     private var store = Store<DoubleCounter>()
     
     var body: some View {
@@ -55,14 +56,14 @@ struct WithStoreObservationSample: View {
             Section {
                 Text(
                     """
-                    `Store`s **not** annotated with `@StateObject` or `@ObservableObject` *can still update* portions of your view body using a `WithStore` view.
+                    `Store`s with large states can be made to selectively update views based on substate using a `WithSubstate` view.
 
                     Use this pattern for stores with large states or states whose changes are small and localized between updates.
                     """
                 )
             }
             Section {
-                WithStore(store, keyPath: \.value) {
+                WithSubstate(store, keyPath: \.value) {
                     value in
                     Text("\(value)")
                 }
@@ -73,7 +74,7 @@ struct WithStoreObservationSample: View {
             }
             
             Section {
-                WithStore(store, keyPath: \.value2) {
+                WithSubstate(store, keyPath: \.value2) {
                     value in
                     Text("\(value)")
                 }
@@ -89,6 +90,6 @@ struct WithStoreObservationSample: View {
 
 struct WithStoreObservationSample_Previews: PreviewProvider {
     static var previews: some View {
-        WithStoreObservationSample()
+        WithSubstateObservationSample()
     }
 }

@@ -34,7 +34,7 @@ public typealias States = Sendable
 ///     case startTicking(timer: String) // start ticking
 /// }
 /// ```
-public protocol Actions: Sendable {}
+public typealias Actions = Sendable
 
 /// A type with describes how application `State` evolves over time in response to `Actions`.
 ///
