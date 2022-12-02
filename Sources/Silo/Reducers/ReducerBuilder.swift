@@ -83,7 +83,7 @@ public struct ReducerBuilder<State: States, Action: Actions> {
 struct EmptyReducer<State: States, Action: Actions>: Reducer {
     init() {}
     
-    func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
+    func reduce(state: inout State, action: Action) -> Effect<Action>? {
         .none
     }
 }
@@ -95,7 +95,7 @@ struct OptionalReducer<Wrapped: Reducer>: Reducer {
         self.reducer = reducer
     }
     
-    func reduce(state: inout Wrapped.State, action: Wrapped.Action) -> Effect<any Actions>? {
+    func reduce(state: inout Wrapped.State, action: Wrapped.Action) -> Effect<Wrapped.Action>? {
         reducer?.reduce(state: &state, action: action) ?? .none
     }
 }
@@ -118,26 +118,8 @@ struct ArrayReducer<State: States, Action: Actions>: Reducer {
         }
     }
 
-    func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
-        var effects: [Effect<any Actions>] = []
-        
-        // run each reducer
-        for reducer in reducers {
-            if let effect = reducer.reduce(state: &state, action: action) {
-                effects.append(effect)
-            }
-        }
-
-        // return a combined effect
-        if !effects.isEmpty {
-            return effects[1...].reduce(effects[0], +)
-        } else {
-            return .none
-        }
-    }
-    
-    func reduce(state: inout State, action: any Actions) -> Effect<any Actions>? {
-        var effects: [Effect<any Actions>] = []
+    func reduce(state: inout State, action: Action) -> Effect<Action>? {
+        var effects: [Effect<Action>] = []
         
         // run each reducer
         for reducer in reducers {

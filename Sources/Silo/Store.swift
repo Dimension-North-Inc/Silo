@@ -78,15 +78,6 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
             if let effect { execute(operation: effect.operation) }
         }
     }
-
-    /// Reduces `action` onto `state`, then executes any returned `Effect`.
-    /// - Parameter action: an action to reduce onto `state`
-    public func dispatch(_ action: any Actions) {
-        mutex.locked {
-            let effect = reducer.reduce(state: &state, action: action)
-            if let effect { execute(operation: effect.operation) }
-        }
-    }
     
     // MARK: - DynamicMemberLookup
     public subscript<T>(dynamicMember keyPath: KeyPath<State, T>) -> T {
@@ -94,12 +85,12 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
     }
     
     @MainActor
-    private func observe(_ action: any Actions) {
+    private func observe(_ action: Action) {
         dispatch(action)
     }
 
     @discardableResult
-    func execute(operation: Effect<any Actions>.Operation) -> Task<(), Never> {
+    func execute(operation: Effect<Action>.Operation) -> Task<(), Never> {
         switch operation {
         case let .one(op):
             return Task {

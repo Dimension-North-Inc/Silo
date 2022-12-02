@@ -13,7 +13,7 @@ import Foundation
 
 /// A  `body` reducer used to reduce one of many `Child`  substates, stored as a collection of `Identifiable` elements.
 public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
-    var impl: (inout State, Action) -> Effect<any Actions>?
+    var impl: (inout State, Action) -> Effect<Action>? = { _, _ in .none }
 
     public init<Child: Reducer, ID: Hashable & Sendable>(
         _ substate: WritableKeyPath<State, IdentifiedArray<ID, Child.State>>,
@@ -26,7 +26,7 @@ public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
                var childValue = state[keyPath: substate][id: id] {
                 let effect = reducer().reduce(state: &childValue, action: action)
                 state[keyPath: substate][id: id] = childValue
-                return effect
+                return effect.map({ rewrap(effect: $0, using: path, id: id) })
             } else {
                 return .none
             }
@@ -44,19 +44,51 @@ public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
                var childValue = state[keyPath: substate][id: id] {
                 let effect = reducer().reduce(state: &childValue, action: action)
                 state[keyPath: substate][id: id] = childValue
-                return effect
+                return effect.map({ rewrap(effect: $0, using: path, id: id) })
             } else {
                 return .none
             }
         }
     }
 
-    public func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
+
+    public func reduce(state: inout State, action: Action) -> Effect<Action>? {
         impl(&state, action)
     }
 }
 
-public struct IdentifiedAction<ID: Hashable & Sendable, Child: Reducer>: Actions {
-    var id: ID
-    var action: Child.Action
+/// Rewrites `Child` actions as equivalent `Parent` actions using parent action case path `path`.
+///
+/// - Parameters:
+///   - effect: a child action effect
+///   - path: a case path for parent actions embedding a child action
+/// - Returns: a parent action effect
+func rewrap<Parent: Actions, Child: Actions, ID: Hashable & Sendable>(effect: Effect<Child>, using path: CasePath<Parent, (ID, Child)>, id: ID) -> Effect<Parent> {
+    return Effect(operation: rewrap(operation: effect.operation, using: path, id: id))
+}
+
+func rewrap<Parent: Actions, Child: Actions, ID: Hashable & Sendable>(operation: Effect<Child>.Operation, using path: CasePath<Parent, (ID, Child)>, id: ID) -> Effect<Parent>.Operation {
+    switch operation {
+    case let .one(op):
+        return .one {
+            path.embed((id, await op()))
+        }
+        
+    case let .many(op):
+        return .many {
+            yield in await op({ action in yield(path.embed((id, action))) })
+        }
+        
+    case let .compound(ops):
+        return .compound(ops.map({ rewrap(operation: $0, using: path, id: id) }))
+        
+    case let .cancellable(name, op):
+        return .cancellable(name, rewrap(operation: op, using: path, id: id))
+        
+    case let .cancel(name):
+        return .cancel(name)
+        
+    case let .forget(name):
+        return .forget(name)
+    }
 }

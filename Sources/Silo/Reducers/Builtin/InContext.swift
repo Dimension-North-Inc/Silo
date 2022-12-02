@@ -9,7 +9,7 @@
 import Foundation
 
 public struct InContext<State: States, Action: Actions>: Reducer {
-    var impl: (inout State, Action) -> Effect<any Actions>?
+    var impl: (inout State, Action) -> Effect<Action>?
 
     public init<Key: ContextKeys, Content: Reducer<State, Action>>(
         key: Key.Type, value: Key.Value,
@@ -18,7 +18,7 @@ public struct InContext<State: States, Action: Actions>: Reducer {
         self.impl = {
             state, action in
 
-            var effect: Effect<any Actions>?
+            var effect: Effect<Action>?
             ContextValues.mutex.locked {
                 ContextValues.push(key, value: value)
                 effect = reducer().reduce(state: &state, action: action)
@@ -28,7 +28,7 @@ public struct InContext<State: States, Action: Actions>: Reducer {
         }
     }
     
-    public func reduce(state: inout State, action: Action) -> Effect<Actions>? {
+    public func reduce(state: inout State, action: Action) -> Effect<Action>? {
         impl(&state, action)
     }
 }

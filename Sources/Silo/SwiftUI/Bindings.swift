@@ -181,7 +181,7 @@ public protocol BindableActions: Actions {
 /// it reduces. The action can be used to identify both substate and value to be updated by the reducer. 
 ///
 public struct ReduceBindings<State: States, Action: BindableActions>: Reducer {
-    public func reduce(state: inout State, action: Action) -> Effect<Actions>? {
+    public func reduce(state: inout State, action: Action) -> Effect<Action>? {
         if let action = (/Action.binding).extract(from: action) as? BindingAction<State>, shouldUpdate(&state, action) {
             action.update(&state)
         }

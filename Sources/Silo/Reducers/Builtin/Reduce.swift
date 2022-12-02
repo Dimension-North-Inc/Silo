@@ -10,11 +10,11 @@ import Foundation
 
 /// A `body` reducer used to reduce local state.
 public struct Reduce<State: States, Action: Actions>: Reducer {
-    var impl: (inout State, Action) -> Effect<any Actions>?
-    public init(impl: @escaping (inout State, Action) -> Effect<any Actions>?) {
+    var impl: (inout State, Action) -> Effect<Action>?
+    public init(impl: @escaping (inout State, Action) -> Effect<Action>?) {
         self.impl = impl
     }
-    public func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
+    public func reduce(state: inout State, action: Action) -> Effect<Action>? {
         return impl(&state, action)
     }
 }

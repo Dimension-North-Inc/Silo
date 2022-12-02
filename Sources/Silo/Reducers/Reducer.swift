@@ -53,7 +53,7 @@ public typealias Actions = Sendable
 ///         case stopTicking
 ///         case startTicking(timer: String)
 ///     }
-///     func reduce(state: inout State, action: Action) -> Effect<any Action>? {
+///     func reduce(state: inout State, action: Action) -> Effect<Action>? {
 ///         switch action {
 ///         case .tick:
 ///             if state.timer != nil {
@@ -85,11 +85,6 @@ public protocol Reducer<State, Action> {
     associatedtype State: States
     
     /// reducer-native actions
-    ///
-    /// All reducers, by virtue of their `reduce(state:action:)` function override
-    /// with action argument `any Actions` can process *any* `Action` type. The `Action`
-    /// associated type, however, refers to what might notionally be considered the **native**
-    /// `Action` type recognized by the reducer.
     associatedtype Action: Actions
     
     /// Reduces `state` as result of receiving a reducer-native `action`.
@@ -98,7 +93,7 @@ public protocol Reducer<State, Action> {
     ///   - state: reducer-native state
     ///   - action: a reducer-native action
     /// - Returns: an optional effect associated with the received action
-    func reduce(state: inout State, action: Action) -> Effect<any Actions>?
+    func reduce(state: inout State, action: Action) -> Effect<Action>?
     
     associatedtype Body
     
@@ -141,31 +136,10 @@ extension Reducer where Body: Reducer, Body.State == Self.State, Body.Action == 
     ///   - state: reducer-native state
     ///   - action: reducer-native action
     /// - Returns: an optional effect associated with the received action
-    public func reduce(state: inout State, action: Action) -> Effect<any Actions>? {
-        return body.reduce(state: &state, action: action)
-    }
-
-    /// Where `body` is defined, forward `reduce` reqiuests to the body
-    /// - Parameters:
-    ///   - state: reducer-native state
-    ///   - action: any action
-    /// - Returns: an optional effect associated with the received action
-    public func reduce(state: inout State, action: any Actions) -> Effect<any Actions>? {
+    public func reduce(state: inout State, action: Action) -> Effect<Action>? {
         return body.reduce(state: &state, action: action)
     }
 }
-
-extension Reducer {
-    @inlinable
-    public func reduce(state: inout State, action: any Actions) -> Effect<any Actions>? {
-        if let action = action as? Action {
-            return reduce(state: &state, action: action)
-        } else {
-            return .none
-        }
-    }
-}
-
 
 /// TODO: Document this
 public protocol SubstateReducer: Reducer {}
