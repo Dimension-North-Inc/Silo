@@ -3,7 +3,7 @@ import Expect
 
 @testable import Silo
 
-final class SiloTests: XCTestCase {
+final class ReducerTests: XCTestCase {
     
     func testReduceChild() throws {
         struct Parent: Reducer {

@@ -18,6 +18,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "git@github.com:Dimension-North-Inc/Expect.git", from: "1.0.0"),
+        .package(url: "https://github.com/pointfreeco/swift-clocks.git", from: "0.2.0"),
         .package(url: "https://github.com/pointfreeco/swift-case-paths.git", from: "0.10.0"),
         .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "0.5.0")
     ],
@@ -27,6 +28,7 @@ let package = Package(
         .target(
             name: "Silo",
             dependencies: [
+                .product(name: "Clocks", package: "swift-clocks"),
                 .product(name: "CasePaths", package: "swift-case-paths"),
                 .product(name: "IdentifiedCollections", package: "swift-identified-collections")
             ]
