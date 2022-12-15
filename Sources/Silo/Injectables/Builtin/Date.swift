@@ -33,5 +33,5 @@ public struct DateGenerator: Sendable {
 }
 
 extension Builtins {
-    public static var date: Factory<DateGenerator> = Factory(.current)
+    public static var date = Injectable<DateGenerator> { .current }
 }

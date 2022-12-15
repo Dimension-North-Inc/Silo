@@ -92,6 +92,8 @@ struct RepeatingEffectsSample: View {
                 }
             }
         }
+        .formStyle(GroupedFormStyle())
+
     }
 }
 

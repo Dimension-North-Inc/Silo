@@ -10,6 +10,6 @@ import Clocks
 import Foundation
 
 extension Builtins {
-    public static var continuousClock: Factory<any Clock<Duration>> = Factory(ContinuousClock())
-    public static var suspendingClock: Factory<any Clock<Duration>> = Factory(SuspendingClock())
+    public static var continuousClock = Injectable<any Clock<Duration>> { ContinuousClock() }
+    public static var suspendingClock = Injectable<any Clock<Duration>> { SuspendingClock() }
 }

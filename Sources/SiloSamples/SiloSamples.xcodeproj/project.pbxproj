@@ -15,6 +15,8 @@
 		4D13DEC12918323B00202C06 /* Silo in Frameworks */ = {isa = PBXBuildFile; productRef = 4D13DEC02918323B00202C06 /* Silo */; };
 		4D13DEC32918360600202C06 /* RepeatingEffectsSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */; };
 		4D1EF92729250E0300F84DE4 /* WithSubstateObservationSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1EF92629250E0300F84DE4 /* WithSubstateObservationSample.swift */; };
+		4D56EEA5294B719C00C74367 /* InjectionSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D56EEA4294B719C00C74367 /* InjectionSample.swift */; };
+		4D56EEA7294B943400C74367 /* StorageInjectionSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D56EEA6294B943400C74367 /* StorageInjectionSample.swift */; };
 		4DD01106291A79BB00D6F346 /* BindingsSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD01105291A79BB00D6F346 /* BindingsSample.swift */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +31,8 @@
 		4D13DEBD2918321200202C06 /* StoreObservationSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreObservationSample.swift; sourceTree = "<group>"; };
 		4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatingEffectsSample.swift; sourceTree = "<group>"; };
 		4D1EF92629250E0300F84DE4 /* WithSubstateObservationSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithSubstateObservationSample.swift; sourceTree = "<group>"; };
+		4D56EEA4294B719C00C74367 /* InjectionSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectionSample.swift; sourceTree = "<group>"; };
+		4D56EEA6294B943400C74367 /* StorageInjectionSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageInjectionSample.swift; sourceTree = "<group>"; };
 		4DD01105291A79BB00D6F346 /* BindingsSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingsSample.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -105,6 +109,7 @@
 				4D4894292934CE0400C47448 /* Store Observation */,
 				4D48942B2934CE2600C47448 /* Side Effects */,
 				4D48942A2934CE1B00C47448 /* Bindings */,
+				4D56EEA3294B716C00C74367 /* Injection */,
 			);
 			path = Samples;
 			sourceTree = "<group>";
@@ -139,6 +144,15 @@
 				4D13DEC22918360600202C06 /* RepeatingEffectsSample.swift */,
 			);
 			path = "Side Effects";
+			sourceTree = "<group>";
+		};
+		4D56EEA3294B716C00C74367 /* Injection */ = {
+			isa = PBXGroup;
+			children = (
+				4D56EEA4294B719C00C74367 /* InjectionSample.swift */,
+				4D56EEA6294B943400C74367 /* StorageInjectionSample.swift */,
+			);
+			path = Injection;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -215,6 +229,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D56EEA5294B719C00C74367 /* InjectionSample.swift in Sources */,
+				4D56EEA7294B943400C74367 /* StorageInjectionSample.swift in Sources */,
 				4DD01106291A79BB00D6F346 /* BindingsSample.swift in Sources */,
 				4D13DEAD291801FD00202C06 /* SampleList.swift in Sources */,
 				4D13DEC32918360600202C06 /* RepeatingEffectsSample.swift in Sources */,

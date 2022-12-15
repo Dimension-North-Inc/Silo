@@ -57,5 +57,5 @@ public struct UUIDGenerator: Sendable {
 }
 
 extension Builtins {
-    public static let uuid = Factory(UUIDGenerator.random)
+    public static let uuid = Injectable<UUIDGenerator> { .random }
 }

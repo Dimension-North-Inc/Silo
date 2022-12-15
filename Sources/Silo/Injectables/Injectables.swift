@@ -1,4 +1,10 @@
 //
+//  Injectables.swift
+//  Silo
+//
+//  Created by Mark Onyschuk on 2022-12-14.
+//  Copyright © 2022 Dimension North Inc. All rights reserved.
+
 // Factory.swift
 //
 // GitHub Repo and Documentation: https://github.com/hmlongco/Factory
@@ -22,61 +28,139 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
 import Foundation
 
-/// Factory manages the dependency injection process for a given object or service.
-public struct Factory<Value> {
-    /// Initializes a Factory with a factory closure that returns a new instance of the desired type.
-    public init(_ factory: @escaping @autoclosure () -> Value) {
-        self.registration = Registration<Void, Value>(factory: factory, scope: nil)
+/// An injectable dependency
+///
+/// Conceptually, an `Injectable` is a value  that you want to `inject` into other code at runtime, rather than hard code at compile time.
+/// `Injectables` can be values, classes, or functions that - when injected into other code - cause that code to behave differently.
+///
+/// **Use Injectables to make your code more testable:**
+///
+/// Networking code that accesses a remote server in a running application can
+/// be replaced by injecting a stub that doesn't actually access the remote server, but instead returns a predetermined result - either some data, or
+/// a simulated networking failure. By controlling network responses, you can write tests to ensure your code can handle hard-to-reproduce
+/// networking conditions and replies.
+///
+///```swift
+/// func processUsers() async throws {
+///     @Injected(API.getUsers) var getUsers
+///     let users = try await getUsers()
+///     //...
+/// }
+///```
+/// **Use Injectables to make using Xcode previews easier:**
+///
+/// Substitute data displayed in a running application with data meant to be displayed in an Xcode preview instead using an injectable.
+///
+///```swift
+/// struct ProductList_Previews: PreviewProvider {
+///     static var previews: some View {
+///         let _ = API.getProducts.register { query in
+///             return [
+///                 Product("Beets"),
+///                 Product("Fish"),
+///             ]
+///         }
+///         ProductList()
+///     }
+/// }
+///```
+///
+/// **Use Injectables to make your applications more flexible:**
+///
+/// Specialize your code for particular users or marketplaces by injecting premium features in place of basic features in an in-app purchasable
+/// application; or by injecting code that interacts with either the Apple App Store, or third party stores like Paddle, depending upon where the app is sold.
+///
+///```swift
+/// func enablePremiumFeatures() async throws {
+///     Features.gameModes.register {
+///         premiumGameModes()
+///     }
+///     Features.purchaseablePowerups.register { user in
+///         premiumPowerupsFor(user)
+///     }
+///     //...
+/// }
+///```
+///
+public struct Injectable<Value> where Value: Sendable {
+    /// Initializes an Injectable with a factory closure that returns a new instance of the desired type.
+    public init(factory: @escaping () -> Value) {
+        self.registration = InjectionRegistration<Void, Value>(factory: factory, scope: nil)
     }
     
-    /// Initializes with factory closure that returns a new instance of the desired type. The scope defines the lifetime of that instance.
-    public init(scope: FactoryScope, factory: @escaping @autoclosure () -> Value) {
-        self.registration = Registration<Void, Value>(factory: factory, scope: scope)
+    /// Initializes a scoped Injectable with a factory closure that returns a new instance of the desired type.
+    public init(scope: InjectionScope, factory: @escaping () -> Value) {
+        self.registration = InjectionRegistration<Void, Value>(factory: factory, scope: scope)
     }
     
-    /// Resolves and returns an instance of the desired object type. This may be a new instance or one that was created previously and then cached,
-    /// depending on whether or not a scope was specified when the factory was created.
+    /// Resolves and returns an instance of the desired value type.
     ///
-    /// Note return type of `Value` could still be `<Value?>` depending on original Factory specification.
+    /// The result may be new, or created previously  then cached,  depending upon  whether or not a scope was specified when the injectable was created.
     public func callAsFunction() -> Value {
         registration.resolve(())
     }
     
-    /// Registers a new factory that will be used to create and return an instance of the desired object type.
+    /// Registers a new factory closure used to create and return an instance of the desired value
     ///
-    /// This registration overrides the original factory and its result will be returned on all new object resolutions. Registering a new
-    /// factory also clears the previous instance from the associated scope.
-    ///
-    /// All registrations are stored in SharedContainer.Registrations.
-    public func register(factory: @escaping @autoclosure () -> Value) {
+    /// This registration overrides the original factory and its result will be returned on all new object resolutions.
+    /// Registering a new factory also clears the previous instance from the associated scope.
+    public func register(factory: @escaping () -> Value) {
         registration.register(factory: factory)
     }
     
-    /// Deletes any registered factory override and resets this Factory to use the factory closure specified during initialization. Also
-    /// resets the scope so that a new instance of the original type will be returned on the next resolution.
+    /// Resets a factory closure override, replacing it with the Injectable's original factory.
     public func reset() {
         registration.reset()
     }
     
-    private let registration: Registration<Void, Value>
+    private let registration: InjectionRegistration<Void, Value>
 }
 
-/// ParameterizedFactory manages the dependency injection process for a given object or service that needs one or more arguments
-/// passed to it during instantiation.
-public struct ParameterizedFactory<Parameters, Value> {
+/// A parameterized injectable dependency
+///
+/// Conceptually, an `Injectable` is a value  that you want to `inject` into other code at runtime, rather than hard code at compile time.
+/// `Injectables` can be values, classes, or functions that - when injected into other code - cause that code to behave differently.
+///
+/// **Passing Parameters**
+///
+/// A `ParameterizedInjectable` allows you to pass parameters to specialize the value you retrieve. Consider an injectable logging
+/// system `.logger` whose behavior varies based on where the logging originates in code:
+///
+/// ```swift
+/// // a named injectable dependency container
+/// enum Dependencies {
+///     static var logger: ParameterizedFeature<Logger> = ParameterizedFeature { subsystemLabel in
+///         ConsoleLogger(prefix: subsystemLabel)
+///     }
+/// }
+///
+/// // an application subsystem
+/// struct ComputeEngine {
+///     // inject our logger
+///     var log = Dependencies.logger("COMPUTE")
+///
+///     // do work and log progress
+///     func doCompute() {
+///         log("BEEP! BOOP! WHIRR!") // logs "COMPUTE: BEEP! BOOP! WHIRR!" to console
+///
+///         // ...
+///     }
+/// }
+/// ```
+
+public struct ParameterizedInjectable<Parameters, Value> where Parameters: Sendable, Value: Sendable {
     
-    /// Initializes a Factory with a factory closure that returns a new instance of the desired type.
+    /// Initializes an Injectable with a factory closure that returns a new instance of the desired type.
     public init(factory: @escaping (_ params: Parameters) -> Value) {
-        self.registration = Registration<Parameters, Value>(factory: factory, scope: nil)
+        self.registration = InjectionRegistration<Parameters, Value>(factory: factory, scope: nil)
     }
     
     /// Initializes with factory closure that returns a new instance of the desired type. The scope defines the lifetime of that instance.
-    public init(scope: FactoryScope, factory: @escaping (_ params: Parameters) -> Value) {
-        self.registration = Registration<Parameters, Value>(factory: factory, scope: scope)
+    public init(scope: InjectionScope, factory: @escaping (_ params: Parameters) -> Value) {
+        self.registration = InjectionRegistration<Parameters, Value>(factory: factory, scope: scope)
     }
     
     /// Resolves and returns an instance of the desired object type. This may be a new instance or one that was created previously and then cached,
@@ -103,11 +187,29 @@ public struct ParameterizedFactory<Parameters, Value> {
         registration.reset()
     }
     
-    private let registration: Registration<Parameters, Value>
+    private let registration: InjectionRegistration<Parameters, Value>
 }
 
-/// Defines an abstract base implementation of a scope cache.
-public class FactoryScope {
+/// An injection scope.
+///
+/// Injection scopes define the lifetime of an injected value. By default, injected values are recalculated each time they are resolved,
+/// but other lifetimes exist. Builtin scopes include `.cached`, `.shared`, or `.singleton`. Refer to documentation for each for details.
+///
+/// **Using Scopes:**
+///
+/// To scope your injectable, pass the scope as a parameter when declaring it:
+///
+/// ```swift
+/// // injectable services
+/// enum Services {
+///     static var logger = Injectable<any Logger>(scope: .singleton) {
+///         return ConsoleLogger()
+///     }
+///
+///     // ...
+/// }
+/// ```
+public class InjectionScope {
     fileprivate init() {
         defer { lock.unlock() }
         lock.lock()
@@ -170,17 +272,22 @@ public class FactoryScope {
     private var cache: [UUID: AnyBox] = .init(minimumCapacity: 64)
 
     
-    /// Defines a cached scope. The same instance will be returned by the factory until the cache is reset.
+    /// A cached scope.
+    ///
+    /// An Injectable scoped `.cached` will resolve to the same value each time, until the cache is reset.
     public static let cached = Cached()
-    public final class Cached: FactoryScope {
+    public final class Cached: InjectionScope {
         public override init() {
             super.init()
         }
     }
     
-    /// Defines a shared (weak) scope. The same instance will be returned by the factory as long as someone maintains a strong reference.
+    /// A weakly shared scope
+    ///
+    /// An Injectable scoped `.shared` will resolve to the same value each time so long as an instance remains in use.
+    /// Once all instances are released, then `.shared` injectables resolve to a new value.
     public static let shared = Shared()
-    public final class Shared: FactoryScope {
+    public final class Shared: InjectionScope {
         public override init() {
             super.init()
         }
@@ -196,55 +303,61 @@ public class FactoryScope {
         }
     }
     
-    /// Defines a singleton scope. The same instance will always be returned by the factory.
+    /// A singleton scope
+    ///
+    /// An Injectable scoped `.singleton` will always resolve to the same value.
     public static let singleton = Singleton()
-    public final class Singleton: FactoryScope {
+    public final class Singleton: InjectionScope {
         public override init() {
             super.init()
         }
     }
     
     /// Resets all scope caches.
-    public static func reset(includingSingletons: Bool = false) {
+    public static func reset(includeSingletons: Bool = false) {
         Self.scopes.forEach {
-            if !($0 is Singleton) || includingSingletons {
+            if !($0 is Singleton) || includeSingletons {
                 $0.reset()
             }
         }
     }
     
-    private static var scopes: [FactoryScope] = []
+    private static var scopes: [InjectionScope] = []
 }
 
 /// Internal registration manager for factories.
-fileprivate struct Registration<Parameters, Value>: Identifiable {
+private struct InjectionRegistration<Parameters, Value>: Identifiable {
     
     let id: UUID = UUID()
     let factory: (Parameters) -> Value
-    let scope: FactoryScope?
+    let scope: InjectionScope?
     
     /// Resolves registration returning cached value from scope or new instance from factory. This is pretty much the heart of Factory.
     func resolve(_ params: Parameters) -> Value {
-        let currentFactory: (Parameters) -> Value = (Factories.factory(for: id) as? TypedFactory<Parameters, Value>)?.factory ?? factory
+        let currentFactory: (Parameters) -> Value = (Injectables.factory(for: id) as? TypedFactory<Parameters, Value>)?.factory ?? factory
         let instance: Value = scope?.resolve(id: id, factory: { currentFactory(params) }) ?? currentFactory(params)
         return instance
     }
     
-    /// Registers a factory override and resets cache.
+    /// Registers an injectable override and resets cache.
     func register(factory: @escaping (_ params: Parameters) -> Value) {
-        Factories.register(id: id, factory: TypedFactory<Parameters, Value>(factory: factory))
+        Injectables.register(id: id, factory: TypedFactory<Parameters, Value>(factory: factory))
         scope?.reset(id)
     }
     
     /// Removes a factory override and resets cache.
     func reset() {
-        Factories.reset(id)
+        Injectables.reset(id)
         scope?.reset(id)
     }
     
 }
 
-public final class Factories {
+
+/// Conceptually, a container holding the state of all injectables and factory function overrides.
+///
+/// Injectables includes functions you can use to `push()` and `pop()` the state of injectable overrides, or to remove all overrides using the `reset()` function.
+public enum Injectables {
     /// Pushes the current set of registration overrides onto a stack. Useful when testing when you want to push the current set of registrations,
     /// add your own, test, then pop the stack to restore the world to its original state.
     public static func push() {
@@ -295,62 +408,6 @@ public final class Factories {
     private static var registrations: [UUID: AnyFactory] = .init(minimumCapacity: 64)
 }
 
-#if swift(>=5.1)
-/// Convenience property wrapper takes a factory and creates an instance of the desired type.
-@propertyWrapper public struct Injected<Value> {
-    private var dependency: Value
-    public init(_ factory: Factory<Value>) {
-        self.dependency = factory()
-    }
-    public var wrappedValue: Value {
-        get { return dependency }
-        mutating set { dependency = newValue }
-    }
-}
-
-/// Convenience property wrapper takes a factory and creates an instance of the desired type the first time the wrapped value is requested.
-@propertyWrapper public struct LazyInjected<Value> {
-    private var factory: Factory<Value>
-    private var dependency: Value!
-    private var initialize = true
-    public init(_ factory: Factory<Value>) {
-        self.factory = factory
-    }
-    public var wrappedValue: Value {
-        mutating get {
-            if initialize {
-                dependency = factory()
-                initialize = false
-            }
-            return dependency
-        }
-        mutating set {
-            dependency = newValue
-        }
-    }
-}
-
-@propertyWrapper public struct WeakLazyInjected<Value> {
-    private var factory: Factory<Value>
-    private weak var dependency: AnyObject?
-    private var initialize = true
-    public init(_ factory: Factory<Value>) {
-        self.factory = factory
-    }
-    public var wrappedValue: Value? {
-        mutating get {
-            if initialize {
-                dependency = factory() as AnyObject
-                initialize = false
-            }
-            return dependency as? Value
-        }
-        mutating set {
-            dependency = newValue as AnyObject
-        }
-    }
-}
-#endif
 
 /// Internal box protocol for factories
 private protocol AnyFactory {}

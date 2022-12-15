@@ -7,7 +7,7 @@ final class DependencyTests: XCTestCase {
     func testUUIDGeneratorCanReturnContantUUIDs() {
         let uuid = UUID()
         
-        Builtins.uuid.register(factory: .constant(uuid))
+        Builtins.uuid.register { .constant(uuid) }
         
         @Injected(Builtins.uuid) var constant;
         
@@ -16,7 +16,7 @@ final class DependencyTests: XCTestCase {
     }
 
     func testUUIDGeneratorCanReturnSequentialUUIDs() {
-        Builtins.uuid.register(factory: .sequential)
+        Builtins.uuid.register { .sequential }
         
         @Injected(Builtins.uuid) var sequential;
         
@@ -29,7 +29,7 @@ final class DependencyTests: XCTestCase {
     func testDateGeneratorCanReturnConstantDates() {
         let date = Date()
         
-        Builtins.date.register(factory: .constant(date))
+        Builtins.date.register { .constant(date) }
         
         @Injected(Builtins.date) var constant;
         

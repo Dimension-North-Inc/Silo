@@ -85,6 +85,7 @@ struct WithSubstateObservationSample: View {
             }
 
         }
+        .formStyle(GroupedFormStyle())
     }
 }
 

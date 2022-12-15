@@ -69,6 +69,17 @@ struct SampleList: View {
                 ),
             ]
         ),
+        SampleGroup(
+            name: "Dependency Injection",
+            samples: [
+                Sample(
+                    name: "Injectables",
+                    view: AnyView(
+                        InjectionSample()
+                    )
+                ),
+            ]
+        ),
     ]
 
     private var allSamples: IdentifiedArrayOf<Sample> {

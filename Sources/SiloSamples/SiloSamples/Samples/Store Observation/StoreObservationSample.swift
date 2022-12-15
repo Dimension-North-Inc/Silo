@@ -60,6 +60,7 @@ struct StoreObservationSample: View {
                 }
             }
         }
+        .formStyle(GroupedFormStyle())
     }
 }
 

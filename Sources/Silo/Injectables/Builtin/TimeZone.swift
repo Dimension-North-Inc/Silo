@@ -8,5 +8,5 @@
 import Foundation
 
 extension Builtins {
-    public static var timeZone = Factory(TimeZone.autoupdatingCurrent)
+    public static var timeZone = Injectable<TimeZone> { .autoupdatingCurrent }
 }

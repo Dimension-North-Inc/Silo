@@ -55,7 +55,7 @@ struct BindingsSample: View {
     var body: some View {
         Form {
             Section {
-                Text("`ReduceBindings` and `@Bindable` synthesize reducer actions corresponding to simple state updates.")
+                Text("`ReduceBindings` and the `@Bindable` property wrapper generate synthetic actions used to reduce simple state updates.")
             }
             Section("Implicit Bindings Action Dispatch") {
                 TextField("Name", text: user.$name)
@@ -70,6 +70,7 @@ struct BindingsSample: View {
                 }
             }
         }
+        .formStyle(GroupedFormStyle())
     }
 }
 
