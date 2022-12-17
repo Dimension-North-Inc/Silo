@@ -11,22 +11,33 @@ import SwiftUI
 
 // MARK: - Custom Injectables Container
 private enum App {
-    public static let userName = Injectable<any InjectableStorage> {
-        DefaultItem<String>.local("username")
+    public static let username = InjectableDefault<String> {
+        .local("username")
+    }
+    
+    public static let password = InjectableKeychain<String> {
+        .local("password")
     }
 }
 
 // MARK: - Sample View
 struct StorageInjectionSample: View {
     @State private var uuid: UUID = UUID()
-    @State private var generator: UUIDGenerator = Builtins.uuid()
+    @State private var generator = Builtins.uuid()
     
-    @Injected(App.userName) var userName
+    @Default(App.username, default: "") var username
+    @Keychain(App.password, default: "") var password
     
     var body: some View {
         Form {
             Section {
-                Text("`InjectableStorage` is an injectable value used to store persistent data. Storage for user defaults, iCloud key/value stores, and the keychain are provided.")
+                Text("`InjectableDefault` and `InjectableKeychain` are injectables used to store persistent data.")
+            }
+            Section("Default Storage") {
+                TextField("User Name", text: $username)
+            }
+            Section("Keychain Storage") {
+                SecureField("Password", text: $password)
             }
         }
         .formStyle(GroupedFormStyle())

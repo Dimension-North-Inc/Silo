@@ -236,7 +236,7 @@ public class InjectionScope {
         lock.lock()
         if let box = cache[id] {
             if let instance = box.instance as? Value {
-                if let optional = instance as? OptionalProtocol {
+                if let optional = instance as? OptionalType {
                     if optional.hasWrappedValue {
                         return instance
                     }
@@ -261,7 +261,7 @@ public class InjectionScope {
     
     /// Internal function correctly boxes cache value depending upon scope type
     fileprivate func box<Value>(_ instance: Value) -> AnyBox? {
-        if let optional = instance as? OptionalProtocol {
+        if let optional = instance as? OptionalType {
             return optional.hasWrappedValue ? StrongBox<Value>(boxed: instance) : nil
         } else {
             return StrongBox<Value>(boxed: instance)
@@ -292,7 +292,7 @@ public class InjectionScope {
             super.init()
         }
         fileprivate override func box<Value>(_ instance: Value) -> AnyBox? {
-            if let optional = instance as? OptionalProtocol {
+            if let optional = instance as? OptionalType {
                 if let unwrapped = optional.wrappedValue, type(of: unwrapped) is AnyObject.Type {
                     return WeakBox(boxed: unwrapped as AnyObject)
                 }
@@ -418,13 +418,13 @@ private struct TypedFactory<Parameters, Value>: AnyFactory {
 }
 
 /// Internal protocol used to evaluate optional types for caching
-private protocol OptionalProtocol {
+private protocol OptionalType {
     var wrappedType: Any.Type { get }
     var wrappedValue: Any? { get }
     var hasWrappedValue: Bool { get }
 }
 
-extension Optional: OptionalProtocol {
+extension Optional: OptionalType {
     var wrappedType: Any.Type {
         Wrapped.self
     }
@@ -441,6 +441,7 @@ extension Optional: OptionalProtocol {
         }
     }
 }
+
 
 /// Internal box protocol for scope functionality
 private protocol AnyBox {

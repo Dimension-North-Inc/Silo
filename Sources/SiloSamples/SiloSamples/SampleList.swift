@@ -78,6 +78,12 @@ struct SampleList: View {
                         InjectionSample()
                     )
                 ),
+                Sample(
+                    name: "Injectable Storage",
+                    view: AnyView(
+                        StorageInjectionSample()
+                    )
+                )
             ]
         ),
     ]

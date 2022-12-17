@@ -16,8 +16,8 @@ private enum App {
 
 // MARK: - Sample View
 struct InjectionSample: View {
-    @State private var uuid: UUID = UUID()
-    @State private var generator: UUIDGenerator = Builtins.uuid()
+    @State private var uuid = UUID()
+    @State private var generator = Builtins.uuid()
     
     @Injected(App.baseURL) var baseURL
     

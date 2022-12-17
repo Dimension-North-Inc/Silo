@@ -10,7 +10,7 @@ import Foundation
 
 /// A  `UUID` generator
 ///
-/// While testing, both `.constant` and `.sequential` generators
+/// While testing, either `.constant` or `.sequential` generators
 /// can be substituted for the default `.random` generator used.
 ///
 public struct UUIDGenerator: Sendable {
@@ -57,5 +57,6 @@ public struct UUIDGenerator: Sendable {
 }
 
 extension Builtins {
+    /// an injectable UUID
     public static let uuid = Injectable<UUIDGenerator> { .random }
 }

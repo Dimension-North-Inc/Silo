@@ -9,5 +9,6 @@
 import Foundation
 
 extension Builtins {
+    /// an injectable locale
     public static var locale = Injectable<Locale> { .autoupdatingCurrent }
 }

@@ -8,5 +8,5 @@
 
 import Foundation
 
-/// A namespace for built-in dependencies
+/// A namespace for built-in injectables
 public enum Builtins {}

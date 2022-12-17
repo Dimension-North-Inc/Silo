@@ -6,7 +6,7 @@
 //  Copyright © 2022 Dimension North Inc. All rights reserved.
 //
 
-import Foundation
+import SwiftUI
 
 /// Keychain-backed persistent key/value containers
 public protocol KeychainContainers {
@@ -153,7 +153,7 @@ public final class MockKeychainContainer: KeychainContainers {
 }
 
 /// A keychain value stored by key, within some keychain-backed container
-public struct KeychainItem<Value>: StorageItem where Value: Codable {
+public struct KeychainItem<Value> where Value: Codable {
     public let key: String
     private let container: KeychainContainers
     
@@ -195,14 +195,54 @@ public struct KeychainItem<Value>: StorageItem where Value: Codable {
 /// A property wrapper for keychain-backed values
 @propertyWrapper
 public struct Keychain<Value> where Value: Codable {
-    let item: KeychainItem<Value>
-    
-    public init(_ keychainItem: KeychainItem<Value>) {
-        self.item = keychainItem
+    private let item: KeychainItem<Value>
+    private let value: Value
+
+    public var wrappedValue: Value {
+        get { item.value ?? value }
+        nonmutating set { item.value = newValue }
+    }
+
+    public var projectedValue: Binding<Value> {
+        Binding(
+            get: { item.value ?? value },
+            set: { newValue in item.value = newValue }
+        )
     }
     
-    public var wrappedValue: Value? {
-        get { item.value }
-        nonmutating set { item.value = newValue }
+    /// Creates a wrapper for a keychain value.
+    ///
+    /// Where no keychain value is defined by the user, then `value` is used in its place, or `nil`
+    /// if value itself is left unspecified.
+    /// - Parameters:
+    ///   - item: a combination key and container used to store the value
+    ///   - default: a default value used as the wrapped value when no default value is defined by the user, or `nil` if unspecified
+    public init(_ item: KeychainItem<Value>, `default`: Value) {
+        self.item = item
+        self.value = `default`
+    }
+
+    public init(_ item: InjectableKeychain<Value>, `default`: Value) {
+        self.item = item()
+        self.value = `default`
+    }
+}
+
+extension Keychain where Value: ExpressibleByNilLiteral {
+    /// Creates a wrapper for a keychain value.
+    ///
+    /// Where no keychain value is defined by the user, then `value` is used in its place, or `nil`
+    /// if value itself is left unspecified.
+    /// - Parameters:
+    ///   - key: a combination key and container used to store the value
+    ///   - default: a default value used as the wrapped value when no default value is defined by the user, or `nil` if unspecified
+    public init(_ item: KeychainItem<Value>, value: Value = nil) {
+        self.item = item
+        self.value = value
+    }
+    
+    public init(_ item: InjectableKeychain<Value>, `default`: Value = nil) {
+        self.item = item()
+        self.value = `default`
     }
 }

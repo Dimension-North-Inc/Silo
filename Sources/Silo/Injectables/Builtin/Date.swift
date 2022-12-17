@@ -8,6 +8,11 @@
 
 import Foundation
 
+
+/// A  `Date` generator
+///
+/// While testing, a `.constant` generator can be substituted for the default `.now` generator used.
+///
 public struct DateGenerator: Sendable {
     private var generate: @Sendable () -> Date
             
@@ -33,5 +38,6 @@ public struct DateGenerator: Sendable {
 }
 
 extension Builtins {
+    /// an injectable date
     public static var date = Injectable<DateGenerator> { .current }
 }

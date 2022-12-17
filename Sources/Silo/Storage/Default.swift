@@ -6,7 +6,7 @@
 //  Copyright © 2022 Dimension North Inc. All rights reserved.
 //
 
-import Foundation
+import SwiftUI
 
 /// Persistent user default value containers
 public protocol DefaultContainers {
@@ -71,7 +71,7 @@ public final class MockDefaultContainer: DefaultContainers {
 }
 
 /// A user default stored by key, within some persistent container
-public struct DefaultItem<Value>: StorageItem where Value: Codable {    
+public struct DefaultItem<Value> where Value: Codable {
     public let key: String
     private let container: DefaultContainers
     
@@ -125,8 +125,11 @@ public struct Default<Value> where Value: Codable {
         nonmutating set { item.value = newValue }
     }
     
-    public var projectedValue: DefaultItem<Value> {
-        item
+    public var projectedValue: Binding<Value> {
+        return Binding(
+            get: { item.value ?? value },
+            set: { newValue in item.value = newValue }
+        )
     }
     
     /// Creates a wrapper for a persistent user default.
@@ -134,10 +137,15 @@ public struct Default<Value> where Value: Codable {
     /// Where no default value is defined by the user, then `value` is used in its place.
     /// - Parameters:
     ///   - key: a combination key and container used to store the value
-    ///   - value: a default value used as the wrapped value when no default value is defined by the user
-    public init(_ key: DefaultItem<Value>, value: Value) {
+    ///   - default: a default value used as the wrapped value when no default value is defined by the user
+    public init(_ key: DefaultItem<Value>, `default`: Value) {
         self.item = key
-        self.value = value
+        self.value = `default`
+    }
+    
+    public init(_ key: InjectableDefault<Value>, `default`: Value) {
+        self.item = key()
+        self.value = `default`
     }
 }
 
@@ -148,9 +156,14 @@ extension Default where Value: ExpressibleByNilLiteral {
     /// if value itself is left unspecified.
     /// - Parameters:
     ///   - key: a combination key and container used to store the value
-    ///   - value: a default value used as the wrapped value when no default value is defined by the user, or `nil` if unspecified
+    ///   - default: a default value used as the wrapped value when no default value is defined by the user, or `nil` if unspecified
     public init(_ key: DefaultItem<Value>, value: Value = nil) {
         self.item = key
         self.value = value
+    }
+    
+    public init(_ key: InjectableDefault<Value>, `default`: Value = nil) {
+        self.item = key()
+        self.value = `default`
     }
 }
