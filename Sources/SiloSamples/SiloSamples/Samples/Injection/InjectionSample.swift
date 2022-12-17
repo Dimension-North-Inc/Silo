@@ -10,7 +10,7 @@ import Silo
 import SwiftUI
 
 // MARK: - Custom Injectables Container
-private enum App {
+private enum API {
     public static let baseURL = Injectable<URL> { URL(string: "https://api.apple.com")! }
 }
 
@@ -19,7 +19,7 @@ struct InjectionSample: View {
     @State private var uuid = UUID()
     @State private var generator = Builtins.uuid()
     
-    @Injected(App.baseURL) var baseURL
+    @Injected(API.baseURL) var baseURL
     
     var body: some View {
         Form {
@@ -27,11 +27,11 @@ struct InjectionSample: View {
                 Text("`Injectable`s are values which can be used to modify behaviour of your code.")
             }
             Section("Injectable Properties") {
-                Text("`@Injected(App.baseURL)` injectable")
+                Text("`@Injected(API.baseURL)` injectable")
                 Text("\(baseURL)")
             }
             Section("Injectable Registration") {
-                Text("`Builtin.uuid` generator configured to return random, constant, or sequential UUIDs")
+                Text("`Builtins.uuid` generator configured to return random, constant, or sequential UUIDs")
                 Text("\(uuid)").font(.callout)
                 ControlGroup {
                     Button("Random UUID", action: useRandomUUIDs)

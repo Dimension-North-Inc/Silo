@@ -124,7 +124,6 @@ struct SampleList: View {
                 #if os(iOS)
                     .navigationBarTitleDisplayMode(.inline)
                 #endif
-                    .padding()
             } else {
                 VStack {
                     Image(systemName: "cube.fill")
@@ -132,7 +131,6 @@ struct SampleList: View {
                         .foregroundColor(.accentColor)
                     Text("Pick A Sample!")
                 }
-                .padding()
             }
         }
     }
