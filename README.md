@@ -1,3 +1,6 @@
+<p align="center"><img src="https://github.com/Dimension-North-Inc/Silo/blob/main/Logo.svg?raw=true" width="33%"></p>
+
+
 # Silo
 
 A Redux inspired state container featuring composable Reducer types and a unified Reducer/Middleware async `Effect` system.
