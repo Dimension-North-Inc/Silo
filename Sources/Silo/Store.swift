@@ -26,7 +26,7 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
     public var objectDidChange  = ObservableStorePublisher()
     public var objectWillChange = ObservableStorePublisher()
 
-    var state: State {
+    public var state: State {
         get {
             mutex.locked { get() }
         }
