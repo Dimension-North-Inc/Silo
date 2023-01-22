@@ -86,6 +86,17 @@ struct SampleList: View {
                 )
             ]
         ),
+        SampleGroup(
+            name: "UndoManager",
+            samples: [
+                Sample(
+                    name: "Undoable Actions",
+                    view: AnyView(
+                        UndoableActionsSample()
+                    )
+                ),
+            ]
+        ),
     ]
 
     private var allSamples: IdentifiedArrayOf<Sample> {

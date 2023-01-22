@@ -12,14 +12,15 @@ import Foundation
 /// A state container
 @dynamicMemberLookup
 public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer {
+    private let mutex: Mutex
     private let reducer: Reducer
+
     private var tasks = [AnyHashable:AnyTask]()
 
     public typealias State = Reducer.State
     public typealias Action = Reducer.Action
     
     /// current state
-    var mutex = Mutex()
     var get: () -> State
     var set: (State) -> Void
 
@@ -36,18 +37,21 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
             objectDidChange.send()
         }
     }
-    
+        
     /// Initializes the store with a reducer and starting state
     /// - Parameters:
     ///   - reducer: a reducer
     ///   - state: a starting state
     public init(_ reducer: Reducer, state: State) {
-        self.reducer = reducer
+        self.reducer     = reducer
+
+        self.mutex       = Mutex()
         
-        var value = state
+        var value        = state
         
-        self.get = { value }
-        self.set = { value = $0 }
+        self.get         = { value }
+        self.set         = { value = $0 }
+        
     }
 
     /// Initializes the store with a reducer and starting state derived from a parent store.
@@ -61,6 +65,7 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
     ///   - keyPath: a keypath from parent state to reducer state
     public init<Parent>(_ reducer: Reducer, parent: Store<Parent>, keyPath: WritableKeyPath<Parent.State, State>) {
         self.reducer = reducer
+        self.mutex = parent.mutex
         
         self.get = { parent.state[keyPath: keyPath] }
         self.set = { parent.state[keyPath: keyPath] = $0 }
@@ -72,13 +77,32 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
     
     /// Reduces `action` onto `state`, then executes any returned `Effect`.
     /// - Parameter action: an action to reduce onto `state`
-    public func dispatch(_ action: Action) {
+    public func dispatch(_ action: Action, undoable undoManager: UndoManager? = nil) {
         mutex.locked {
-            let effect = reducer.reduce(state: &state, action: action)
+            // update state copy
+            let prev   = state
+            var next   = state
+            
+            let effect = reducer.reduce(state: &next, action: action)
+            
+            updateState(prev: prev, next: next, undoable: undoManager)
+            
             if let effect { execute(operation: effect.operation) }
         }
     }
-    
+
+    private func updateState(prev: State, next: State, undoable undoManager: UndoManager?) {
+        #if !os(Linux)
+        if let undoManager {
+            undoManager.registerUndo(withTarget: self) {
+                store in store.updateState(prev: next, next: prev, undoable: undoManager)
+            }
+        }
+        #endif
+
+        state = next
+    }
+
     // MARK: - DynamicMemberLookup
     public subscript<T>(dynamicMember keyPath: KeyPath<State, T>) -> T {
         return state[keyPath: keyPath]

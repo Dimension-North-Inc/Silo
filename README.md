@@ -16,10 +16,6 @@ adopts it particularly in it's built-in SwiftUI support, but it otherwise minimi
 
 `Storage`, by comparison, was written prior to `async-await` and has rudimentary support for `Combine`.
 
-One among several areas where `Storage` is more established than `Silo` is its handling of classic Cocoa undo management. `Storage`
-started its life as the back-end for a document-based Cocoa application. Undo is a key part of this environment, and `Silo` hasn't yet
-been coded to support Cocoa-style undo/redo.
-
 ### Silo Components
 
 `Silo` bundles two basic services that are meant to be used together - a state manager `Store`, and a dependency injectable type `Injectable`. 
@@ -156,6 +152,37 @@ relationships.
         // reduce local `@Bindable` state
         ReduceBindings()
     }
+```
+
+Actions dispatched to a store modify state. When dispatching actions, pass an `UndoManager` to mark the action as Undo/Redo-able. 
+In SwiftUI applications, the active `UndoManager` instance can be accessed from the current `Environment`:
+
+```swift
+// MARK: - Sample View
+struct UndoableActionsSample: View {
+    @Environment(\.undoManager) private var undoManager
+
+    @StateObject
+    private var counter = Store(UndoableCounter(), state: UndoableCounter.State())
+    
+    var body: some View {
+        Form {
+            Section {
+                Text("\(counter.value)")
+                Button("Increment") {
+                    /// mark action as `undoable`
+                    counter.dispatch(.increment, undoable: undoManager)
+                }
+                Button("Decrement") {
+                    /// mark action as `undoable`
+                    counter.dispatch(.decrement, undoable: undoManager)
+                }
+            }
+        }
+        .formStyle(GroupedFormStyle())
+    }
+}
+
 ```
 
 #### Injectable

@@ -25,6 +25,8 @@ struct UserReducer: Reducer {
     var body: some Reducer<State, Action> {
         ReduceBindings {
             state, action in
+            
+            /// an optional closure allows observation of binding updates...
             switch action.keyPath {
             case \.$name:       print("will update name: \(action.value)")
             case \.$isVerified: print("will update isVerified: \(action.value)")
@@ -32,6 +34,7 @@ struct UserReducer: Reducer {
             default:            break
             }
             
+            /// return `true` to allow the  update, `false` otherwise
             return true
         }
         Reduce {
@@ -39,7 +42,9 @@ struct UserReducer: Reducer {
             switch action {
             case .incrementAccessCount: state.accessCount += 1
                 
-            default: break
+            case .binding:
+                /// allow `ReduceBindings` to process the binding update
+                break
             }
             
             return .none
