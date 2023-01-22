@@ -62,24 +62,20 @@ struct WithSubstateObservationSample: View {
                     """
                 )
             }
-            Section {
+            Section("WithSubstate(store, keyPath: \\.value)") {
                 WithSubstate(store, keyPath: \.value) {
                     value in
                     Text("\(value)")
                 }
-            }
-            Section("Only Updates Above") {
                 Button("Increment", action: { store.dispatch(.increment) })
                 Button("Decrement", action: { store.dispatch(.decrement) })
             }
             
-            Section {
+            Section("WithSubstate(store, keyPath: \\.value2)") {
                 WithSubstate(store, keyPath: \.value2) {
                     value in
                     Text("\(value)")
                 }
-            }
-            Section("Only Updates Above") {
                 Button("Increment", action: { store.dispatch(.increment2) })
                 Button("Decrement", action: { store.dispatch(.decrement2) })
             }
