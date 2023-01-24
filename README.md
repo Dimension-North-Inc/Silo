@@ -16,6 +16,10 @@ adopts it particularly in it's built-in SwiftUI support, but it otherwise minimi
 
 `Storage`, by comparison, was written prior to `async-await` and has rudimentary support for `Combine`.
 
+A recent addition to `Silo` originating in `Storage` is support for `UndoManager`. Its implementation in `Silo` has some limitations you should
+carefully consider: undo/redo and async `Effect`s are dangerous when mixed. A storage container should support either async `Effect`s or 
+`UndoManager`, but not both.
+
 ### Silo Components
 
 `Silo` bundles two basic services that are meant to be used together - a state manager `Store`, and a dependency injectable type `Injectable`. 
@@ -23,16 +27,16 @@ These two services combine to provide a highly configurable, easily testable bac
 
 #### Store
 
-The first and principle service `Silo` provides is a state container called `Store`. Customize the behaviour of your store using a `Reducer` with 
-its associated `State` and `Actions`. Behaviours triggered by Actions are represented as `Effects` which run asynchronously and generate actions 
-as they run.
+The first and principle service `Silo` provides is a state container called `Store`. Customize the behaviour of your `Store` using a `Reducer` with
+associated `State` and `Actions`. Trigger a state update by `dispatch`ing actions to the `Store`. Behaviours triggered by Actions are represented as
+`Effects` which run asynchronously and dispatch new `Actions` as they run. 
 
 `State` represents an application's configuration at some snapshot in time.
 
 `Action` represents both user interactions as well as points in an application's lifecycle. A user's button tap which adds a TODO item to a list of TODOs 
-can be modeled as an action. Similarly, application launch, a ticking timer, or the presentation of a new window can be modeled as actions.
+can be modeled as an action. Similarly, application launch, a ticking timer, or the presentation of a new window can be modeled as actions. 
 
-`Reducer` encapsulates application logic in a `reduce(state:action:)` where `State` is modified and optional asynchronous `Effect`s are run:
+`Reducer` encapsulates application logic in a `reduce(state:action:)` function where `State` is modified and optional asynchronous `Effect`s are run:
 
 ```swift
 struct Ticker: Reducer {
@@ -153,6 +157,8 @@ relationships.
         ReduceBindings()
     }
 ```
+
+**Undo Manager Support**
 
 Actions dispatched to a store modify state. When dispatching actions, pass an `UndoManager` to mark the action as Undo/Redo-able. 
 In SwiftUI applications, the active `UndoManager` instance can be accessed from the current `Environment`:

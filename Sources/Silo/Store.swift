@@ -75,16 +75,26 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
         cancelAll()
     }
     
-    /// Reduces `action` onto `state`, then executes any returned `Effect`.
+    /// Reduces `action` onto `state`, then executes any returned `Effect`. State updates are optionally
+    /// registered with the passed `undoManager`.
+    ///
+    /// - Warning: Mixing undo/redo with async `Effect`s is dangerous. A store should support either but not both.
+    ///
     /// - Parameter action: an action to reduce onto `state`
+    /// - Parameter undoManager: an optional `UndoManager` used to undo `state` update
     public func dispatch(_ action: Action, undoable undoManager: UndoManager? = nil) {
         mutex.locked {
-            // update state copy
-            let prev   = state
-            var next   = state
+            // update state
+            let prev    = state
+            var next    = state
             
-            let effect = reducer.reduce(state: &next, action: action)
+            let effect  = reducer.reduce(state: &next, action: action)
             
+            assert(
+                undoManager == nil || tasks.isEmpty && effect == nil,
+                "Mixing undo/redo with async effects is dangerous. A store should support either but not both."
+            )
+
             updateState(prev: prev, next: next, undoable: undoManager)
             
             if let effect { execute(operation: effect.operation) }
@@ -95,7 +105,8 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
         #if !os(Linux)
         if let undoManager {
             undoManager.registerUndo(withTarget: self) {
-                store in store.updateState(prev: next, next: prev, undoable: undoManager)
+                [unowned undoManager] store in
+                store.updateState(prev: next, next: prev, undoable: undoManager)
             }
         }
         #endif
