@@ -33,7 +33,7 @@ final class ReducerTests: XCTestCase {
                     return .none
                 }
                 ReduceChild(\.child, action: /Action.child) {
-                    Child()
+                    return Child()
                 }
             }
         }
@@ -118,7 +118,7 @@ final class ReducerTests: XCTestCase {
                     return .none
                 }
                 ReduceChildren(\.children, action: /Action.child) {
-                    Child()
+                    return Child()
                 }
             }
         }
