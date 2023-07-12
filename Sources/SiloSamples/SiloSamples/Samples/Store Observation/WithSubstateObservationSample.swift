@@ -66,6 +66,8 @@ struct WithSubstateObservationSample: View {
                 WithSubstate(store, keyPath: \.value) {
                     value in
                     Text("\(value)")
+                    
+                    let _ = print("Uodated Top View")
                 }
                 Button("Increment", action: { store.dispatch(.increment) })
                 Button("Decrement", action: { store.dispatch(.decrement) })
@@ -75,6 +77,8 @@ struct WithSubstateObservationSample: View {
                 WithSubstate(store, keyPath: \.value2) {
                     value in
                     Text("\(value)")
+
+                    let _ = print("Uodated Bottom View")
                 }
                 Button("Increment", action: { store.dispatch(.increment2) })
                 Button("Decrement", action: { store.dispatch(.decrement2) })

@@ -12,12 +12,12 @@ import SwiftUI
 // MARK: - Reducer
 struct UserReducer: Reducer {
     struct State: States {
-        @Bindable var name: String = ""
-        @Bindable var isVerified: Bool = false
+        @Bound var name: String = ""
+        @Bound var isVerified: Bool = false
         
         var accessCount: Int = 0
     }
-    enum Action: BindableActions {
+    enum Action: BindingActions {
         case incrementAccessCount
         case binding(BindingAction<State>)
     }
@@ -60,7 +60,7 @@ struct BindingsSample: View {
     var body: some View {
         Form {
             Section {
-                Text("`ReduceBindings` and the `@Bindable` property wrapper generate synthetic actions used to reduce simple state updates.")
+                Text("`ReduceBindings` and the `@Bound` property wrapper generate synthetic actions used to reduce simple state updates.")
             }
             Section("Implicit Bindings Action Dispatch") {
                 TextField("Name", text: user.$name)

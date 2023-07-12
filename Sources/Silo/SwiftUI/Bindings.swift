@@ -10,29 +10,29 @@ import SwiftUI
 
 /// A property wrapper used to mark state properties as accessible via SwiftUI bindings,
 ///
-/// Mark state properties you wish to mutate via SwiftUI bindings with the `@Bindable`
+/// Mark state properties you wish to mutate via SwiftUI bindings with the `@Bound`
 /// property wrapper:
 ///
 /// ```swift
 /// struct User: Reducer {
 ///     struct State: States {
 ///         // accessible as `@Binding`
-///         @Bindable var name: String
-///         @Bindable var age:  Int
+///         @Bound var name: String
+///         @Bound var age:  Int
 ///
 ///         // not accessible as `@Binding`
 ///         var isAuthenticated: Bool
 ///     }
 /// ```
 ///
-/// Next, declare your `Action` type as conforming to `BindableActions`, so that
+/// Next, declare your `Action` type as conforming to `BindingActions`, so that
 /// binding updates can be interpreted by your reducer.
-/// `BindableActions` replaces multiple, per-property update-style actions with a single
+/// `BindingActions` replaces multiple, per-property update-style actions with a single
 /// action that transports SwiftUI binding updates:
 ///
 ///```swift
-///     // conform `Action` to `BindableActions`
-///     enum Action: BindableActions {
+///     // conform `Action` to `BindingActions`
+///     enum Action: BindingActions {
 ///         case authenticate
 ///
 ///         // action used to contain binding update actions
@@ -72,7 +72,7 @@ import SwiftUI
 /// ```
 ///
 @propertyWrapper
-public struct Bindable<Value> {
+public struct Bound<Value> {
     public var wrappedValue: Value
     
     public var projectedValue: Self {
@@ -85,7 +85,7 @@ public struct Bindable<Value> {
     }
 }
 
-extension Bindable: Codable where Value: Codable {
+extension Bound: Codable where Value: Codable {
     public init(from decoder: Decoder) throws {
         self.init(wrappedValue: try Value.init(from: decoder))
     }
@@ -94,8 +94,8 @@ extension Bindable: Codable where Value: Codable {
     }
 }
 
-extension Bindable: Sendable where Value: Sendable {}
-extension Bindable: Equatable where Value: Equatable {}
+extension Bound: Sendable where Value: Sendable {}
+extension Bound: Equatable where Value: Equatable {}
 
 /// An action representing the update of bound state.
 ///
@@ -114,23 +114,23 @@ public struct BindingAction<State: States>: @unchecked Actions {
 
 /// An Action type used to represent actions that wrap `BindingAction`s
 ///
-/// If reducer `State` contains properties marked `@Bindable`, then
-/// the reducer's associated `Action` type should conform to `BindableActions` -
+/// If reducer `State` contains properties marked `@Bound`, then
+/// the reducer's associated `Action` type should conform to `BindingActions` -
 /// a specialization of the `Actions` protocol:
 ///
 ///```swift
 /// struct User: Reducer {
 ///     struct State: States {
 ///         // accessible as `@Binding`
-///         @Bindable var name: String
-///         @Bindable var age:  Int
+///         @Bound var name: String
+///         @Bound var age:  Int
 ///
 ///         // not accessible as `@Binding`
 ///         var isAuthenticated: Bool
 ///     }
 ///
-///     // conform `Action` to `BindableActions`
-///     enum Action: BindableActions {
+///     // conform `Action` to `BindingActions`
+///     enum Action: BindingActions {
 ///         case authenticate
 ///
 ///         // action used to contain binding update actions
@@ -144,7 +144,7 @@ public struct BindingAction<State: States>: @unchecked Actions {
 /// contains a `case binding(BindingAction<State>)` used to pass
 /// binding values into the reducer.
 ///
-public protocol BindableActions: Actions {
+public protocol BindingActions: Actions {
   /// The root state type that contains bindable fields.
     associatedtype State: States
 
@@ -180,7 +180,7 @@ public protocol BindableActions: Actions {
 /// `ReduceBindings` accepts an optional `shouldUpdate` closure which is called for each action
 /// it reduces. The action can be used to identify both substate and value to be updated by the reducer. 
 ///
-public struct ReduceBindings<State: States, Action: BindableActions>: Reducer {
+public struct ReduceBindings<State: States, Action: BindingActions>: Reducer {
     public func reduce(state: inout State, action: Action) -> Effect<Action>? {
         if let action = (/Action.binding).extract(from: action) as? BindingAction<State>, shouldUpdate(&state, action) {
             action.update(&state)
@@ -196,8 +196,8 @@ public struct ReduceBindings<State: States, Action: BindableActions>: Reducer {
     }
 }
 
-extension Store where Reducer.Action: BindableActions, Reducer.State == Reducer.Action.State {
-    public subscript<T>(dynamicMember keyPath: WritableKeyPath<State, Bindable<T>>) -> Binding<T> {
+extension Store where Reducer.Action: BindingActions, Reducer.State == Reducer.Action.State {
+    public subscript<T>(dynamicMember keyPath: WritableKeyPath<State, Bound<T>>) -> Binding<T> {
         Binding {
             self.state[keyPath: keyPath].wrappedValue
         } set: {

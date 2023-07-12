@@ -3,7 +3,7 @@
 
 # Silo
 
-A Redux inspired state container featuring composable Reducer types and a unified Reducer/Middleware async `Effect` system.
+A Flux inspired state container featuring composable Reducer types and a unified Reducer/Middleware async `Effect` system.
 
 `Silo` is an evolution of our older state container: `Storage`, which more closely models Redux with `Store`, `Reducer`, and `Middleware` 
 types playing roles similar to those you might encounter in a standard Redux environment. 
@@ -14,7 +14,7 @@ types playing roles similar to those you might encounter in a standard Redux env
 where it needs to, but eschews that wherever it can to simplify the codebase. `Combine` plays a role in Apple's SwiftUI framework, so `Silo`
 adopts it particularly in it's built-in SwiftUI support, but it otherwise minimizes dependency on the framework.
 
-`Storage`, by comparison, was written prior to `async-await` and has rudimentary support for `Combine`.
+`Storage`, by comparison, was written prior to both `async-await` and `Combine`.
 
 A recent addition to `Silo` originating in `Storage` is support for `UndoManager`. Its implementation in `Silo` has some limitations you should
 carefully consider: undo/redo and async `Effect`s are dangerous when mixed. A storage container should support either async `Effect`s or 
@@ -123,19 +123,19 @@ relationships.
         }
 ```
 
-`ReduceBindings` and the `@Bindable` property wrapper generate synthetic actions used to reduce simple state updates:
+`ReduceBindings` and the `@Bound` property wrapper generate synthetic actions used to reduce simple state updates:
 
 ```swift
     struct State: States {
-        // synthesize update actions for properties marked `@Bindable`
-        @Bindable var name: String = ""
-        @Bindable var isVerified: Bool = false
+        // synthesize update actions for properties marked `@Bound`
+        @Bound var name: String = ""
+        @Bound var isVerified: Bool = false
         
         var accessCount: Int = 0
     }
     
-    // make actions conform to `BindableActions` with a `case binding(BindingAction<State>)` action
-    enum Action: BindableActions {
+    // make actions conform to `BindingActions` with a `case binding(BindingAction<State>)` action
+    enum Action: BindingActions {
         case incrementAccessCount
         case binding(BindingAction<State>)
     }
@@ -153,7 +153,7 @@ relationships.
             return .none
         }
         
-        // reduce local `@Bindable` state
+        // reduce local `@Bound` state
         ReduceBindings()
     }
 ```
