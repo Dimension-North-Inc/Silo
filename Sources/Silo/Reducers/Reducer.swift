@@ -165,5 +165,10 @@ extension Reducer where Body: Reducer, Body.State == Self.State, Body.Action == 
     }
 }
 
+extension Reducer where State: Identifiable {
+    /// where state is `Identifiable` provide `Reducer.ID` as an alias for `Reducer.State.ID`
+    public typealias ID = State.ID
+}
+
 /// TODO: Document this
 public protocol SubstateReducer: Reducer {}
