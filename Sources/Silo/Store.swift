@@ -37,7 +37,15 @@ public final class Store<Reducer>: ObservableObject where Reducer: Silo.Reducer 
             objectDidChange.send()
         }
     }
-        
+    
+    /// An observable stream of state changes
+    public var states: AnyPublisher<State, Never> {
+        objectDidChange.prepend(()).map {
+            [unowned self] in state
+        }
+        .eraseToAnyPublisher()
+    }
+    
     /// Initializes the store with a reducer and starting state
     /// - Parameters:
     ///   - reducer: a reducer

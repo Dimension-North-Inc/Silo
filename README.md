@@ -191,6 +191,120 @@ struct UndoableActionsSample: View {
 
 ```
 
+**Projection**
+
+Silo states are often optimized for quick access or normalized to remove data duplication, at the cost of 
+understandability. To present state in a more understandable, task-specific way, create a `Projection` 
+- a `ViewModel` style object that can be injected into SwiftUI Views. 
+
+To make a store available for projection within child views, use the `.project(_:)` modifier within a parent SwiftUI view:
+
+```swift
+struct ParentView: View {
+    struct ProjectedCounter: Feature {
+        struct State: States {
+            var value: Int = 0
+        }
+        enum Action: Actions {
+            case increment
+            case decrement
+        }
+        
+        static var initial = State()
+        
+        var body: some Reducer<State, Action> {
+            Reduce {
+                state, action in
+                
+                switch action {
+                case .increment: state.value += 1
+                case .decrement: state.value -= 1
+                }
+                
+                // no side effects
+                return .none
+            }
+        }
+    }
+
+    // a store we want to project to child views
+    var store = Store<ProjectedCounter>()
+
+    var body: some View {
+        MyTopLevelContainer()
+        
+            // project the store into child views
+            .project(store)
+    }
+}
+```
+
+Create a store-backed view model by implementing the `Projection` protocol:
+
+```swift
+// Store-backed ViewModel
+final class Stars: Projection, ObservableObject {
+    @Published var stars: String = ""
+    
+    init(store: Store<ProjectedCounter>) {
+        // cached to send actions
+        self.store = store
+        
+        /// perform our mapping from state to view model state...
+        store.states
+            // pick out the integer value
+            .map {
+                $0.value
+            }
+            
+            // ignore unrelated state updates
+            .removeDuplicates()
+
+            /// convert to a string of emoji stars`
+            .map {
+                value in String(repeating: "⭐️", count: value)
+            }
+
+            /// finally, assign to our `@Published `stars property
+            .assign(to: &$stars)
+    }
+
+    private var store: Store<ProjectedCounter>
+
+    func rateHigher() {
+        store.dispatch(.increment)
+    }
+    func rateLower() {
+        store.dispatch(.decrement)
+    }
+}
+```
+
+Within child views, use Silo's `Projected` view type to create and access
+your view model:
+
+```swift
+struct ChildView: View {
+    var body: some View {
+        // inject our view model
+        Projected(Stars.self) {
+            model in 
+            
+            // the model is now accessible within the view
+            VStack {
+                Text(model.stars)
+                Button(model.rateHigher) {
+                    Label("Thumbs Up")
+                }
+                Button(model.rateLower) {
+                    Label("Thumbs Down")
+                }
+            }
+        }
+    }
+}
+```
+
 #### Injectable
 
 Conceptually, an `Injectable` is a value  that you want to `inject` into other code at runtime, rather than hard code at compile time.
