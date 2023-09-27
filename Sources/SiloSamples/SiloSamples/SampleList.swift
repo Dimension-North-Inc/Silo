@@ -67,6 +67,12 @@ struct SampleList: View {
                         BindingsSample()
                     )
                 ),
+                Sample(
+                    name: "Projection",
+                    view: AnyView(
+                        ProjectionSample()
+                    )
+                ),
             ]
         ),
         SampleGroup(
@@ -106,6 +112,9 @@ struct SampleList: View {
     @State
     private var selectedID: Sample.ID?
 
+    // ProjectionSample Support
+    let projectedCounter = Store(ProjectedCounter(), state: .init())
+    
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedID) {
@@ -144,6 +153,9 @@ struct SampleList: View {
                 }
             }
         }
+        
+        // ProjectionSample Support
+        .project(projectedCounter)
     }
 }
 

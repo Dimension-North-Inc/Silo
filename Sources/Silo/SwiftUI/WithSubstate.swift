@@ -25,16 +25,15 @@ public struct WithSubstate<Reducer, Value, Content>: View where Reducer: Silo.Re
     private var value: Value
         
     public var body: some View {
-        content(value)
-        // on store value update, reassign `value`
-            .onReceive(store.objectDidChange) {
-                let v0 = value
-                let v1 = store[keyPath: keyPath]
-                
-                if !isEqual(v0, v1) {
-                    value = v1
-                }
+        content(value).onReceive(store.objectDidChange) {
+            // on store value update, reassign `value`
+            let v0 = value
+            let v1 = store[keyPath: keyPath]
+            
+            if !isEqual(v0, v1) {
+                value = v1
             }
+        }
     }
     
     /// Initializes the view to display substate `keyPath` of `store` on update.
@@ -77,7 +76,7 @@ public struct WithSubstate<Reducer, Value, Content>: View where Reducer: Silo.Re
 }
 
 
-struct UsingStore_Previews: PreviewProvider {
+struct WithSubstate_Previews: PreviewProvider {
     struct DoubleCounter: Feature {
         struct State: States {
             var value: Int = 0
@@ -124,12 +123,10 @@ struct UsingStore_Previews: PreviewProvider {
                     Text("\(value)")
                 }
             }
-            
             Section("Only Updates Above") {
                 Button("Increment", action: { store.dispatch(.increment) })
                 Button("Decrement", action: { store.dispatch(.decrement) })
             }
-            
             Section {
                 WithSubstate(store, keyPath: \.value2) {
                     value in
@@ -140,7 +137,7 @@ struct UsingStore_Previews: PreviewProvider {
                 Button("Increment", action: { store.dispatch(.increment2) })
                 Button("Decrement", action: { store.dispatch(.decrement2) })
             }
-
         }
+        .formStyle(.grouped)
     }
 }
