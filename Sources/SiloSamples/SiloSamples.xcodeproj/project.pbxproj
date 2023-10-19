@@ -114,6 +114,7 @@
 				4D4894292934CE0400C47448 /* Store Observation */,
 				4D48942B2934CE2600C47448 /* Side Effects */,
 				4D48942A2934CE1B00C47448 /* Bindings */,
+				4DF820892AE16ECB00EB156D /* Projection */,
 				4D56EEA3294B716C00C74367 /* Injection */,
 			);
 			path = Samples;
@@ -139,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				4DD01105291A79BB00D6F346 /* BindingsSample.swift */,
-				4D78960A2AC351D00079A3BF /* ProjectionSample.swift */,
 			);
 			path = Bindings;
 			sourceTree = "<group>";
@@ -167,6 +167,14 @@
 				4D813376297DA32B00253A05 /* UndoableActionsSample.swift */,
 			);
 			path = UndoManager;
+			sourceTree = "<group>";
+		};
+		4DF820892AE16ECB00EB156D /* Projection */ = {
+			isa = PBXGroup;
+			children = (
+				4D78960A2AC351D00079A3BF /* ProjectionSample.swift */,
+			);
+			path = Projection;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

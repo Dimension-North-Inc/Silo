@@ -41,20 +41,23 @@ public protocol Projection<Reducer> {
 /// A SwiftUI View that creates and connects a `Projection` with its underlying `Store`.
 /// The projection is made available within the projected view `body.`
 public struct Projected<Projection, Content>: View where Projection: Silo.Projection & ObservableObject, Content: View {
+    
+    public typealias ProjectedContent = (Binding<Projection>)->Content
+    
     @Environment(\.stores) private var stores
 
     @State private var projection: Projection?
-    private var content: (Projection)->Content
+    private var content: ProjectedContent
 
     private struct Container: View {
-        var content: (Projection)->Content
+        var content: ProjectedContent
         @StateObject var projection: Projection
         
         var body: some View {
-            content(projection)
+            content(.constant(projection))
         }
         
-        init(content: @escaping (Projection)->Content, projection: Projection) {
+        init(content: @escaping ProjectedContent, projection: Projection) {
             self.content = content
             self._projection = StateObject(wrappedValue: projection)
         }
@@ -64,7 +67,7 @@ public struct Projected<Projection, Content>: View where Projection: Silo.Projec
     /// - Parameters:
     ///   - projection: the type of projection to create
     ///   - content: the projected view body which can access the projection.
-    public init(_ projection: Projection.Type, @ViewBuilder content: @escaping (Projection)->Content) {
+    public init(_ projection: Projection.Type, @ViewBuilder content: @escaping ProjectedContent) {
         self.content = content
     }
     

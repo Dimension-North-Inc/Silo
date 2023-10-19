@@ -193,42 +193,42 @@ struct UndoableActionsSample: View {
 
 **Projection**
 
-Silo states are often optimized for quick access or normalized to remove data duplication, at the cost of 
-understandability. To present state in a more understandable, task-specific way, create a `Projection` 
-- a `ViewModel` style object that can be injected into SwiftUI Views. 
+Silo states are often optimized for quick access, or normalized to remove data duplication, at the cost of 
+understandability. To present state in a more understandable, task-specific, or view-optimized way, create a
+`Projection`; a `ViewModel` style object that can be injected into SwiftUI Views. 
 
 To make a store available for projection within child views, use the `.project(_:)` modifier within a parent SwiftUI view:
 
 ```swift
-struct ParentView: View {
-    struct ProjectedCounter: Feature {
-        struct State: States {
-            var value: Int = 0
-        }
-        enum Action: Actions {
-            case increment
-            case decrement
-        }
-        
-        static var initial = State()
-        
-        var body: some Reducer<State, Action> {
-            Reduce {
-                state, action in
-                
-                switch action {
-                case .increment: state.value += 1
-                case .decrement: state.value -= 1
-                }
-                
-                // no side effects
-                return .none
+struct Counter: Feature {
+    struct State: States {
+        var value: Int = 0
+    }
+    enum Action: Actions {
+        case increment
+        case decrement
+    }
+    
+    static var initial = State()
+    
+    var body: some Reducer<State, Action> {
+        Reduce {
+            state, action in
+            
+            switch action {
+            case .increment: state.value += 1
+            case .decrement: state.value -= 1
             }
+            
+            // no side effects
+            return .none
         }
     }
+}
 
+struct ParentView: View {
     // a store we want to project to child views
-    var store = Store<ProjectedCounter>()
+    var store = Store<Counter>()
 
     var body: some View {
         MyTopLevelContainer()
@@ -246,7 +246,7 @@ Create a store-backed view model by implementing the `Projection` protocol:
 final class Stars: Projection, ObservableObject {
     @Published var stars: String = ""
     
-    init(store: Store<ProjectedCounter>) {
+    init(store: Store<Counter>) {
         // cached to send actions
         self.store = store
         
@@ -269,7 +269,7 @@ final class Stars: Projection, ObservableObject {
             .assign(to: &$stars)
     }
 
-    private var store: Store<ProjectedCounter>
+    private var store: Store<Counter>
 
     func rateHigher() {
         store.dispatch(.increment)
@@ -288,7 +288,7 @@ struct ChildView: View {
     var body: some View {
         // inject our view model
         Projected(Stars.self) {
-            model in 
+            $model in 
             
             // the model is now accessible within the view
             VStack {
