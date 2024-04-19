@@ -17,7 +17,7 @@ public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
 
     public init<Child: Reducer, ID: Hashable & Sendable>(
         _ substate: WritableKeyPath<State, IdentifiedArray<ID, Child.State>>,
-        action path: CasePath<Action, (ID, Child.Action)>,
+        action path: AnyCasePath<Action, (ID, Child.Action)>,
         @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
     ) {
         self.impl = {
@@ -35,7 +35,7 @@ public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
     
     public init<Child: Reducer, ID: Hashable & Sendable>(
         _ substate: WritableKeyPath<State, IdentifiedArray<ID, Child.State>>,
-        action path: CasePath<Action, (ID, Child.Action)>,
+        action path: AnyCasePath<Action, (ID, Child.Action)>,
         reducer: @autoclosure @escaping () -> Child
     ) {
         self.impl = {
@@ -63,11 +63,11 @@ public struct ReduceChildren<State: States, Action: Actions>: SubstateReducer {
 ///   - effect: a child action effect
 ///   - path: a case path for parent actions embedding a child action
 /// - Returns: a parent action effect
-func rewrap<Parent: Actions, Child: Actions, ID: Hashable & Sendable>(effect: Effect<Child>, using path: CasePath<Parent, (ID, Child)>, id: ID) -> Effect<Parent> {
+func rewrap<Parent: Actions, Child: Actions, ID: Hashable & Sendable>(effect: Effect<Child>, using path: AnyCasePath<Parent, (ID, Child)>, id: ID) -> Effect<Parent> {
     return Effect(operation: rewrap(operation: effect.operation, using: path, id: id))
 }
 
-func rewrap<Parent: Actions, Child: Actions, ID: Hashable & Sendable>(operation: Effect<Child>.Operation, using path: CasePath<Parent, (ID, Child)>, id: ID) -> Effect<Parent>.Operation {
+func rewrap<Parent: Actions, Child: Actions, ID: Hashable & Sendable>(operation: Effect<Child>.Operation, using path: AnyCasePath<Parent, (ID, Child)>, id: ID) -> Effect<Parent>.Operation {
     switch operation {
     case let .one(op):
         return .one {

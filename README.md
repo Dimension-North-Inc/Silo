@@ -305,6 +305,29 @@ struct ChildView: View {
 }
 ```
 
+#### Storage
+
+Silo provides two property wrapper types meant to mark variables that are stored beyond standard application lifecycle: 
+`@Default` and `@Keychain`. The `@Default` wrapper resembles SwiftUI's app state storage, but adds support for both local- 
+and cloud-stored defaults. `@Keychain` provides similar support backed by Apple's hardened keychain storage APIs. 
+
+Unlike SwiftUI implementations, these wrappers are available to any type. Usage looks like this:
+
+```swift
+final class Foo {
+    // cloud and local variants
+    @Default(.local("user-machine-specific-foo")) var foo: String = ""
+    @Default(.cloud("cloud-shared-bar")) var bar: Bool = false
+    
+    // no cloud-specific - keychain is shared
+    @Keychain("meh") var meh = "meh..."
+    
+    // either supports Optionals with no default value (assumes nil)
+    @Default(.local("bazOrNil")) var baz: CGRect?
+    @Keychain("buqOrNil") var buq: CGSize?
+}
+```
+
 #### Injectable
 
 Conceptually, an `Injectable` is a value  that you want to `inject` into other code at runtime, rather than hard code at compile time.

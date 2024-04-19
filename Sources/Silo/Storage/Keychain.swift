@@ -217,14 +217,14 @@ public struct Keychain<Value> where Value: Codable {
     /// - Parameters:
     ///   - item: a combination key and container used to store the value
     ///   - default: a default value used as the wrapped value when no default value is defined by the user, or `nil` if unspecified
-    public init(_ item: KeychainItem<Value>, `default`: Value) {
+    public init(wrappedValue: Value, _ item: KeychainItem<Value>) {
         self.item = item
-        self.value = `default`
+        self.value = wrappedValue
     }
 
-    public init(_ item: InjectableKeychain<Value>, `default`: Value) {
+    public init(wrappedValue: Value, _ item: InjectableKeychain<Value>) {
         self.item = item()
-        self.value = `default`
+        self.value = wrappedValue
     }
 }
 
@@ -236,13 +236,13 @@ extension Keychain where Value: ExpressibleByNilLiteral {
     /// - Parameters:
     ///   - key: a combination key and container used to store the value
     ///   - default: a default value used as the wrapped value when no default value is defined by the user, or `nil` if unspecified
-    public init(_ item: KeychainItem<Value>, value: Value = nil) {
+    public init(wrappedValue: Value = nil, _ item: KeychainItem<Value>) {
         self.item = item
-        self.value = value
+        self.value = wrappedValue
     }
     
-    public init(_ item: InjectableKeychain<Value>, `default`: Value = nil) {
+    public init(wrappedValue: Value = nil, _ item: InjectableKeychain<Value>) {
         self.item = item()
-        self.value = `default`
+        self.value = wrappedValue
     }
 }

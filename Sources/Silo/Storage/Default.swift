@@ -138,14 +138,14 @@ public struct Default<Value> where Value: Codable {
     /// - Parameters:
     ///   - key: a combination key and container used to store the value
     ///   - default: a default value used as the wrapped value when no default value is defined by the user
-    public init(_ key: DefaultItem<Value>, `default`: Value) {
+    public init(wrappedValue: Value, _ key: DefaultItem<Value>) {
         self.item = key
-        self.value = `default`
+        self.value = wrappedValue
     }
     
-    public init(_ key: InjectableDefault<Value>, `default`: Value) {
+    public init(wrappedValue: Value, _ key: InjectableDefault<Value>) {
         self.item = key()
-        self.value = `default`
+        self.value = wrappedValue
     }
 }
 
@@ -157,13 +157,13 @@ extension Default where Value: ExpressibleByNilLiteral {
     /// - Parameters:
     ///   - key: a combination key and container used to store the value
     ///   - default: a default value used as the wrapped value when no default value is defined by the user, or `nil` if unspecified
-    public init(_ key: DefaultItem<Value>, value: Value = nil) {
+    public init(wrappedValue: Value = nil, _ key: DefaultItem<Value>) {
         self.item = key
-        self.value = value
+        self.value = wrappedValue
     }
     
-    public init(_ key: InjectableDefault<Value>, `default`: Value = nil) {
+    public init(wrappedValue: Value = nil, _ key: InjectableDefault<Value>) {
         self.item = key()
-        self.value = `default`
+        self.value = wrappedValue
     }
 }

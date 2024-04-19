@@ -23,7 +23,7 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     ///   - reducer: a child state reducer
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State>,
-        action path: CasePath<Action, Child.Action>,
+        action path: AnyCasePath<Action, Child.Action>,
         @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
     ) {
         self.impl = {
@@ -47,7 +47,7 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     ///   - reducer: a child state reducer
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State?>,
-        action path: CasePath<Action, Child.Action>,
+        action path: AnyCasePath<Action, Child.Action>,
         @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
     ) {
         self.impl = {
@@ -72,7 +72,7 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     ///   - reducer: a child state reducer
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State>,
-        action path: CasePath<Action, Child.Action>,
+        action path: AnyCasePath<Action, Child.Action>,
         reducer: @autoclosure @escaping () -> Child
     ) {
         self.impl = {
@@ -95,7 +95,7 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
     ///   - reducer: a child state reducer
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State?>,
-        action path: CasePath<Action, Child.Action>,
+        action path: AnyCasePath<Action, Child.Action>,
         reducer: @autoclosure @escaping () -> Child
     ) {
         self.impl = {
@@ -172,11 +172,11 @@ public struct ReduceChild<State: States, Action: Actions>: SubstateReducer {
 ///   - effect: a child action effect
 ///   - path: a case path for parent actions embedding a child action
 /// - Returns: a parent action effect
-private func rewrap<Parent: Actions, Child: Actions>(effect: Effect<Child>, using path: CasePath<Parent, Child>) -> Effect<Parent> {
+private func rewrap<Parent: Actions, Child: Actions>(effect: Effect<Child>, using path: AnyCasePath<Parent, Child>) -> Effect<Parent> {
     return Effect(operation: rewrap(operation: effect.operation, using: path))
 }
 
-private func rewrap<Parent: Actions, Child: Actions>(operation: Effect<Child>.Operation, using path: CasePath<Parent, Child>) -> Effect<Parent>.Operation {
+private func rewrap<Parent: Actions, Child: Actions>(operation: Effect<Child>.Operation, using path: AnyCasePath<Parent, Child>) -> Effect<Parent>.Operation {
     switch operation {
     case let .one(op):
         return .one {

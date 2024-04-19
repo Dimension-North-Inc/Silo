@@ -18,9 +18,9 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "git@github.com:Dimension-North-Inc/Expect.git", from: "1.0.0"),
-        .package(url: "https://github.com/pointfreeco/swift-clocks.git", from: "0.3.0"),
-        .package(url: "https://github.com/pointfreeco/swift-case-paths.git", from: "0.10.0"),
-        .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "0.7.1")
+        .package(url: "https://github.com/pointfreeco/swift-clocks.git", from: "1.0.2"),
+        .package(url: "https://github.com/pointfreeco/swift-case-paths.git", from: "1.3.2"),
+        .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.

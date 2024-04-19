@@ -16,10 +16,33 @@ private enum API {
 
 // MARK: - Sample View
 struct InjectionSample: View {
+    @Injected(API.baseURL) var baseURL
+    
+    enum GeneratorType: String, CaseIterable, Identifiable {
+        case random
+        case constant
+        case sequential
+
+        var id: Self { self }
+    }
+
     @State private var uuid = UUID()
     @State private var generator = Builtins.uuid()
+    @State private var selectedGenerator: GeneratorType = .random
     
-    @Injected(API.baseURL) var baseURL
+    private func updateGenerator() {
+        switch selectedGenerator {
+        case .random:
+            Builtins.uuid.reset()
+        case .constant:
+            Builtins.uuid.register { .constant(UUID()) }
+        case .sequential:
+            Builtins.uuid.register { .sequential }
+        }
+        
+        generator = Builtins.uuid()
+        generateNextUUID()
+    }
     
     var body: some View {
         Form {
@@ -33,34 +56,20 @@ struct InjectionSample: View {
             Section("Injectable Registration") {
                 Text("`Builtins.uuid` generator configured to return random, constant, or sequential UUIDs")
                 Text("\(uuid)").font(.callout)
-                ControlGroup {
-                    Button("Random UUID", action: useRandomUUIDs)
-                    Button("Constant UUID", action: useConstantUUIDs)
-                    Button("Sequential UUID", action: useSequentialUUIDs)
+                
+                Picker("UUID Generator", selection: $selectedGenerator) {
+                    ForEach(GeneratorType.allCases) {
+                        Text($0.rawValue.capitalized)
+                            .tag($0)
+                    }
+                }.onChange(of: selectedGenerator) { _ in
+                    updateGenerator()
                 }
+                
                 Button("Generate Next UUID", action: generateNextUUID)
             }
         }
         .formStyle(GroupedFormStyle())
-    }
-    
-    private func useRandomUUIDs() {
-        Builtins.uuid.reset()
-        generator = Builtins.uuid()
-        
-        generateNextUUID()
-    }
-    private func useConstantUUIDs() {
-        Builtins.uuid.register { .constant(UUID()) }
-        generator = Builtins.uuid()
-
-        generateNextUUID()
-    }
-    private func useSequentialUUIDs() {
-        Builtins.uuid.register { .sequential }
-        generator = Builtins.uuid()
-
-        generateNextUUID()
     }
     
     private func generateNextUUID() {

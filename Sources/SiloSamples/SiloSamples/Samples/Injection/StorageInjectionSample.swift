@@ -25,8 +25,8 @@ struct StorageInjectionSample: View {
     @State private var uuid: UUID = UUID()
     @State private var generator = Builtins.uuid()
     
-    @Default(App.username, default: "") var username
-    @Keychain(App.password, default: "") var password
+    @Default(App.username) var username = ""
+    @Keychain(App.password) var password = ""
     
     var body: some View {
         Form {
