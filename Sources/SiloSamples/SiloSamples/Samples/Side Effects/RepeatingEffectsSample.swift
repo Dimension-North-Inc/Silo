@@ -13,7 +13,7 @@ import SwiftUI
 struct Ticker: Reducer {
     struct State: States {
         var value: Int = 0
-        var tickerID: UUID? = nil
+        var tickerID: EffectID? = nil
     }
     enum Action: Actions {
         case tick
@@ -40,7 +40,9 @@ struct Ticker: Reducer {
                 ///
                 /// To cause multiple `.tick` actions to be sent, we return an async side-effect
                 /// that returns `many` actions.
-                state.tickerID = UUID()
+                
+                state.tickerID = .unique
+                
                 return Effect.many {
                     send in
                     send(Action.tick)
@@ -49,8 +51,8 @@ struct Ticker: Reducer {
                         send(Action.tick)
                     }
                 }
-                /// we make this effect *cancellable* using an arbirtary `Hashable` - in this case a
-                /// `Optional(UUID)` which we've stored in `state`.
+                /// we make this effect *cancellable* using an EffectID
+                /// which we've stored in `state`.
                 .cancelled(using: state.tickerID)
                 
             case .finishTicking where state.tickerID != nil:

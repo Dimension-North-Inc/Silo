@@ -13,15 +13,16 @@ public typealias MultiActionEffect<Action> = (Yield<Action>) async -> Void
 
 /// An asynchronous side-effect, managed and run by a `Store` as result of `Action`s sent to it's associated `reducer`.
 public struct Effect<Action> {
+    
     enum Operation {
         case one(ActionEffect<Action>)
         case many(MultiActionEffect<Action>)
         
-        case cancel(AnyHashable)
-        case forget(AnyHashable)
+        case cancel(EffectID)
+        case forget(EffectID)
         
         indirect case compound([Operation])
-        indirect case cancellable(AnyHashable, Operation)
+        indirect case cancellable(EffectID, Operation)
     }
     
     var operation: Operation
@@ -38,7 +39,7 @@ public struct Effect<Action> {
     ///     guard state.ticker == nil else {
     ///         return .none
     ///     }
-    ///     state.ticker = UUID()
+    ///     state.ticker = .unique
     ///     return Effect.many {
     ///             send in
     ///             send(.tick)
@@ -61,7 +62,9 @@ public struct Effect<Action> {
     ///}
     /// ```
     /// - Parameter name: a unique name
-    public func cancelled(using name: AnyHashable) -> Self {
+    public func cancelled(using name: EffectID?) -> Self {
+        guard let name else { return self }
+        
         switch operation {
         case .one, .many, .compound:
             return Effect(operation: .cancellable(name, operation))
@@ -91,14 +94,15 @@ public struct Effect<Action> {
     /// Returns as effect used to cancel a previously registered cancellable effect.
     /// - Parameter name: an effect name
     /// - Returns: a new effect
-    public static func cancel(_ name: AnyHashable) -> Effect {
+    public static func cancel(_ name: EffectID?) -> Effect? {
+        guard let name else { return nil }
         return Effect(operation: .cancel(name))
     }
     
     /// Returns an effect used to forget a previously registered cancellable effect.
     /// - Parameter name: an effect name
     /// - Returns: a new effect.
-    public static func forget(_ name: AnyHashable) -> Effect {
+    public static func forget(_ name: EffectID) -> Effect {
         return Effect(operation: .forget(name))
     }
     
@@ -116,3 +120,23 @@ public struct Effect<Action> {
     }
 }
 
+/// A type  used to identify Effects for future cancellation.
+public struct EffectID: Codable, Hashable, Sendable {
+    var value: String
+    
+    public init() {
+        self.init(UUID())
+    }
+    
+    init(_ value: String) {
+        self.value = value
+    }
+    init(_ value: UUID) {
+        self.value = value.uuidString
+    }
+        
+    public static var unique: Self { Self(UUID()) }
+
+    public static func uuid(_ value: UUID) -> Self { Self(value) }
+    public static func string(_ value: String) -> Self { Self(value) }
+}

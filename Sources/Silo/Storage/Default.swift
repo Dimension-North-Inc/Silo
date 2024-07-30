@@ -94,7 +94,9 @@ public struct DefaultItem<Value> where Value: Codable {
         self.key = key
         self.container = container
     }
-    
+}
+
+extension DefaultItem {
     /// Creates a keyed user default item stored in `UserDefaults.standard`
     /// - Parameter key: an item key
     /// - Returns: a default item

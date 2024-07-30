@@ -333,6 +333,34 @@ final class Foo {
 Conceptually, an `Injectable` is a value  that you want to `inject` into other code at runtime, rather than hard code at compile time.
 `Injectables` can be values, classes, or functions that - when injected into other code - cause that code to behave differently.
 
+An `Injectable` can be declared on any type. You can choose to use a single type for all of your `Injectable`s, or group them by assigning
+them to different types. 
+
+`Injectable` declarations look like this:
+
+```swift
+// injectable services
+enum Services {
+    static var logger = Injectable<any Logger>(scope: .singleton) {
+        return ConsoleLogger()
+    }
+
+    // ...
+}
+```
+
+Access your `Injectable` either directly, or by using the `@Injected` property wrapper:
+
+```swift
+// direct access
+let logger2 = Services.logger()
+logger2.log("Hello World")
+
+// propery wrapper 
+@Injected(Services.logger) var logger
+logger.log("Hello World")
+```
+
 **Use Injectables to make your code more testable:**
 
 Networking code that accesses a remote server in a running application can
@@ -343,7 +371,9 @@ networking conditions and replies.
 ```swift
 func processUsers() async throws {
     @Injected(API.getUsers) var getUsers
+    
     let users = try await getUsers()
+    
     //...
 }
 ```
