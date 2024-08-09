@@ -145,6 +145,11 @@ public struct Default<Value> where Value: Codable {
         self.value = wrappedValue
     }
     
+    public init(wrappedValue: Value, _ key: String) {
+        self.item = .local(key)
+        self.value = wrappedValue
+    }
+    
     public init(wrappedValue: Value, _ key: InjectableDefault<Value>) {
         self.item = key()
         self.value = wrappedValue
@@ -164,6 +169,11 @@ extension Default where Value: ExpressibleByNilLiteral {
         self.value = wrappedValue
     }
     
+    public init(wrappedValue: Value, _ key: String) {
+        self.item = .local(key)
+        self.value = wrappedValue
+    }
+
     public init(wrappedValue: Value = nil, _ key: InjectableDefault<Value>) {
         self.item = key()
         self.value = wrappedValue

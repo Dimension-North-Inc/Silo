@@ -221,6 +221,11 @@ public struct Keychain<Value> where Value: Codable {
         self.item = item
         self.value = wrappedValue
     }
+    
+    public init(wrappedValue: Value, _ item: String) {
+        self.item = .local(item)
+        self.value = wrappedValue
+    }
 
     public init(wrappedValue: Value, _ item: InjectableKeychain<Value>) {
         self.item = item()
@@ -241,6 +246,11 @@ extension Keychain where Value: ExpressibleByNilLiteral {
         self.value = wrappedValue
     }
     
+    public init(wrappedValue: Value = nil, _ item: String) {
+        self.item = .local(item)
+        self.value = wrappedValue
+    }
+
     public init(wrappedValue: Value = nil, _ item: InjectableKeychain<Value>) {
         self.item = item()
         self.value = wrappedValue
