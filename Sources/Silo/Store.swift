@@ -272,3 +272,5 @@ public final class ObservableStorePublisher: Publisher {
         impl.receive(subscriber: subscriber)
     }
 }
+
+extension UndoManager: @retroactive @unchecked Sendable {}

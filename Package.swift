@@ -19,7 +19,7 @@ let package = Package(
     dependencies: [
         .package(url: "git@github.com:Dimension-North-Inc/Expect.git", from: "1.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-clocks.git", from: "1.0.2"),
-        .package(url: "https://github.com/pointfreeco/swift-case-paths.git", from: "1.0.0"),
+        .package(url: "https://github.com/pointfreeco/swift-case-paths.git", from: "1.1.0"),
         .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0")
     ],
     targets: [

@@ -144,7 +144,7 @@ public struct BindingAction<State: States>: @unchecked Actions {
 /// contains a `case binding(BindingAction<State>)` used to pass
 /// binding values into the reducer.
 ///
-public protocol BindingActions: Actions & CasePathable {
+public protocol BindingActions: Actions {
   /// The root state type that contains bindable fields.
     associatedtype State: States
 
