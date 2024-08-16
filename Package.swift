@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -17,10 +17,11 @@ let package = Package(
             targets: ["Silo"]),
     ],
     dependencies: [
-        .package(url: "git@github.com:Dimension-North-Inc/Expect.git", from: "1.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-clocks.git", from: "1.0.2"),
-        .package(url: "https://github.com/pointfreeco/swift-case-paths.git", from: "1.1.0"),
-        .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0")
+        .package(url: "https://github.com/pointfreeco/swift-case-paths.git", branch: "main"),
+        .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0"),
+        
+        .package(url: "git@github.com:Dimension-North-Inc/swift-testing.git", from: "0.10.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -35,6 +36,6 @@ let package = Package(
         ),
         .testTarget(
             name: "SiloTests",
-            dependencies: ["Silo", "Expect"]),
+            dependencies: ["Silo", "swift-testing"]),
     ]
 )

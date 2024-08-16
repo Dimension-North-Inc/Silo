@@ -8,6 +8,8 @@
 
 import SwiftUI
 
+@_exported import CasePaths
+
 /// A property wrapper used to mark state properties as accessible via SwiftUI bindings,
 ///
 /// Mark state properties you wish to mutate via SwiftUI bindings with the `@Bound`
@@ -102,7 +104,7 @@ extension Bound: Equatable where Value: Equatable {}
 /// When adding a `ReduceBindings` to your custom reducer body, actions are
 /// reported back to you in the reducers `shouldUpdate` closure.
 ///
-public struct BindingAction<State: States>: @unchecked Actions {
+public struct BindingAction<State: States> {
     /// the action's aassociated keypath
     public let keyPath: PartialKeyPath<State>
     /// the action's associated value
@@ -145,13 +147,23 @@ public struct BindingAction<State: States>: @unchecked Actions {
 /// binding values into the reducer.
 ///
 public protocol BindingActions: Actions {
-  /// The root state type that contains bindable fields.
+    /// The root state type that contains bindable fields.
     associatedtype State: States
+    
+    /// Embeds a binding action in this action type.
+    ///
+    /// - Returns: A binding action.
+    static func binding(_ action: BindingAction<State>) -> Self
+    
+    
+    /// Extracts a binding action from this action type.
+    var binding: BindingAction<State>? { get }
+}
 
-  /// Embeds a binding action in this action type.
-  ///
-  /// - Returns: A binding action.
-  static func binding(_ action: BindingAction<State>) -> Self
+extension BindingActions {
+    public var binding: BindingAction<State>? {
+        AnyCasePath(unsafe: { .binding($0) }).extract(from: self)
+    }
 }
 
 /// A `Reducer` that reduces `BindableAction`s actions onto state.
@@ -182,10 +194,9 @@ public protocol BindingActions: Actions {
 ///
 public struct ReduceBindings<State: States, Action: BindingActions>: Reducer {
     public func reduce(state: inout State, action: Action) -> Effect<Action>? {
-        if let action = (/Action.binding).extract(from: action) as? BindingAction<State>, shouldUpdate(&state, action) {
+        if let action = action.binding as? BindingAction<State>, shouldUpdate(&state, action) {
             action.update(&state)
         }
-        
         return .none
     }
     
