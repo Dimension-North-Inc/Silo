@@ -15,16 +15,21 @@ import Foundation
 public struct ReduceChildren<State: States, Action: Actions & CasePathable>: SubstateReducer {
     var impl: (inout State, Action) -> Effect<Action>? = { _, _ in .none }
 
+    /// Initializes the reducer with a keypath from local to child state, and a child `reducer` used to reduce child state.
+    /// - Parameters:
+    ///   - substate: a keypath from local to child state
+    ///   - action: a casepath matching a local action wrapping a child action
+    ///   - reducer: a child state reducer
     public init<Child: Reducer, ID: Hashable & Sendable>(
         _ substate: WritableKeyPath<State, IdentifiedArray<ID, Child.State>>,
         action path: CaseKeyPath<Action, (ID, Child.Action)>,
-        @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
+        reducer: Child
     ) {
         self.impl = {
             state, action in
             if let (id, action) = action[case: path],
                var childValue = state[keyPath: substate][id: id] {
-                let effect = reducer().reduce(state: &childValue, action: action)
+                let effect = reducer.reduce(state: &childValue, action: action)
                 state[keyPath: substate][id: id] = childValue
                 return effect.map({ rewrap(effect: $0, using: path, id: id) })
             } else {
@@ -32,25 +37,6 @@ public struct ReduceChildren<State: States, Action: Actions & CasePathable>: Sub
             }
         }
     }
-    
-    public init<Child: Reducer, ID: Hashable & Sendable>(
-        _ substate: WritableKeyPath<State, IdentifiedArray<ID, Child.State>>,
-        action path: CaseKeyPath<Action, (ID, Child.Action)>,
-        reducer: @autoclosure @escaping () -> Child
-    ) {
-        self.impl = {
-            state, action in
-            if let (id, action) = action[case: path],
-               var childValue = state[keyPath: substate][id: id] {
-                let effect = reducer().reduce(state: &childValue, action: action)
-                state[keyPath: substate][id: id] = childValue
-                return effect.map({ rewrap(effect: $0, using: path, id: id) })
-            } else {
-                return .none
-            }
-        }
-    }
-
 
     public func reduce(state: inout State, action: Action) -> Effect<Action>? {
         impl(&state, action)

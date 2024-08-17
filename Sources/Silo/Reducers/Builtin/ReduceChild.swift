@@ -24,13 +24,12 @@ public struct ReduceChild<State: States, Action: Actions & CasePathable>: Substa
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State>,
         action path: CaseKeyPath<Action, Child.Action>,
-        @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
+        reducer: Child
     ) {
         self.impl = {
             state, action in
             if let action = action[case: path],
-               let effect = reducer().reduce(state: &state[keyPath: substate], action: action) {
-                
+               let effect = reducer.reduce(state: &state[keyPath: substate], action: action) {
                 return rewrap(effect: effect, using: path)
                 
             } else {
@@ -48,62 +47,14 @@ public struct ReduceChild<State: States, Action: Actions & CasePathable>: Substa
     public init<Child: Reducer>(
         _ substate: WritableKeyPath<State, Child.State?>,
         action path: CaseKeyPath<Action, Child.Action>,
-        @ReducerBuilder<Child.State, Child.Action> reducer: @escaping () -> Child
+        reducer:Child
     ) {
         self.impl = {
             state, action in
             if let action = action[case: path],
                var childValue = state[keyPath: substate] {
                 
-                let effect = reducer().reduce(state: &childValue, action: action)
-                state[keyPath: substate] = childValue
-                return effect.map({ rewrap(effect: $0, using: path) })
-                
-            } else {
-                return .none
-            }
-        }
-    }
-
-    /// Initializes the reducer with a keypath from local to child state, and a child `reducer` used to reduce child state.
-    /// - Parameters:
-    ///   - substate: a keypath from local to child state
-    ///   - action: a casepath matching a local action wrapping a child action
-    ///   - reducer: a child state reducer
-    public init<Child: Reducer>(
-        _ substate: WritableKeyPath<State, Child.State>,
-        action path: CaseKeyPath<Action, Child.Action>,
-        reducer: @autoclosure @escaping () -> Child
-    ) {
-        self.impl = {
-            state, action in
-            if let action = action[case: path],
-               let effect = reducer().reduce(state: &state[keyPath: substate], action: action) {
-                return rewrap(effect: effect, using: path)
-                
-            } else {
-                return .none
-            }
-        }
-    }
-    
-    /// Initializes the reducer with a keypath from local to child state, and a child `reducer` used to reduce child state
-    /// **if child state is not nil**.
-    /// - Parameters:
-    ///   - substate: a keypath from local to child state
-    ///   - action: a casepath matching a local action wrapping a child action
-    ///   - reducer: a child state reducer
-    public init<Child: Reducer>(
-        _ substate: WritableKeyPath<State, Child.State?>,
-        action path: CaseKeyPath<Action, Child.Action>,
-        reducer: @autoclosure @escaping () -> Child
-    ) {
-        self.impl = {
-            state, action in
-            if let action = action[case: path],
-               var childValue = state[keyPath: substate] {
-                
-                let effect = reducer().reduce(state: &childValue, action: action)
+                let effect = reducer.reduce(state: &childValue, action: action)
                 state[keyPath: substate] = childValue
                 return effect.map({ rewrap(effect: $0, using: path) })
                 

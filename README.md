@@ -412,6 +412,9 @@ func enablePremiumFeatures() async throws {
 }
 ```
 
-### Testing
+### Roadmap
 
-`Silo` includes the `Expect` package for more fluent test case expressions and several basic tests surrounding parent-child reducer relationships.
+With the arrival of Swift 6.0, Silo's next steps will advance its version from 1.x to 2.x. Foremost among updates to Silo moving forward,
+are support Swift 6.0 strict concurrency checking. Injectables will be made safe to access in concurrent environments, and reducer signatures will
+be altered to avoid use of global state when passing context information between parent and child reducers. I plan, as well, to incorporate some
+additional disjoint application services into the library, allowing it to act as a sort of one-stop-shop for our future commercial applications.

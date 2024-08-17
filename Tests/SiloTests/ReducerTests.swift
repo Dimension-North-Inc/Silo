@@ -35,9 +35,7 @@ struct ToOneReducers {
                 return .none
             }
             
-            ReduceChild(\.child, action: \.child) {
-                return Child()
-            }
+            ReduceChild(\.child, action: \.child, reducer: Child())
         }
     }
     
@@ -126,9 +124,7 @@ struct ToManyReducers {
                 
                 return .none
             }
-            ReduceChildren(\.children, action: \.child) {
-                return Child()
-            }
+            ReduceChildren(\.children, action: \.child, reducer: Child())
         }
     }
 

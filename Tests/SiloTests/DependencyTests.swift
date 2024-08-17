@@ -6,7 +6,7 @@ import Testing
 @Suite
 struct BuiltinInjectables {
     @Test
-    func testUUIDGeneratorCanReturnSequentialUUIDs() {
+    func testUUIDGenerator() {
         Builtins.uuid.register { .sequential }
         
         @Injected(Builtins.uuid) var sequential;
@@ -15,12 +15,8 @@ struct BuiltinInjectables {
         #expect(sequential().uuidString == "00000000-0000-0000-0000-000000000001")
         #expect(sequential().uuidString == "00000000-0000-0000-0000-000000000002")
         #expect(sequential().uuidString == "00000000-0000-0000-0000-000000000003")
-    }
-    
-    @Test
-    func testUUIDGeneratorCanReturnConstantUUIDs() {
-        let uuid = UUID()
         
+        let uuid = UUID()
         Builtins.uuid.register { .constant(uuid) }
         
         @Injected(Builtins.uuid) var constant;
@@ -30,7 +26,7 @@ struct BuiltinInjectables {
     }
     
     @Test
-    func testDateGeneratorCanReturnConstantDates() {
+    func testDateGenerator() {
         let date = Date()
         
         Builtins.date.register { .constant(date) }
